@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,83 +13,199 @@
       background: var(--ink);
       position: relative;
       overflow: hidden;
-      display: flex; align-items: center;
+      display: flex;
+      align-items: center;
       padding: 4rem clamp(1rem, 6vw, 4rem);
     }
+
     .hero__bg-text {
-      position: absolute; right: -1rem; top: 50%;
+      position: absolute;
+      right: -1rem;
+      top: 50%;
       transform: translateY(-50%);
       font-family: var(--font-heading);
       font-size: clamp(12rem, 22vw, 20rem);
       font-weight: 900;
-      color: var(--red); opacity: .07;
-      pointer-events: none; user-select: none;
+      color: var(--red);
+      opacity: .07;
+      pointer-events: none;
+      user-select: none;
       line-height: 1;
     }
+
     .hero__pattern {
-      position: absolute; inset: 0;
-      background-image: radial-gradient(circle at 25% 50%, rgba(192,57,43,.15) 0%, transparent 60%),
-                        radial-gradient(circle at 75% 20%, rgba(212,160,23,.08) 0%, transparent 50%);
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 25% 50%, rgba(192, 57, 43, .15) 0%, transparent 60%),
+        radial-gradient(circle at 75% 20%, rgba(212, 160, 23, .08) 0%, transparent 50%);
     }
-    .hero__content { position: relative; z-index: 1; max-width: 640px; }
+
+    .hero__content {
+      position: relative;
+      z-index: 1;
+      max-width: 640px;
+    }
+
     .hero__eyebrow {
-      display: inline-flex; align-items: center; gap: .5rem;
-      background: rgba(212,160,23,.15);
-      border: 1px solid rgba(212,160,23,.3);
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: rgba(212, 160, 23, .15);
+      border: 1px solid rgba(212, 160, 23, .3);
       color: var(--gold);
       padding: .35rem .9rem;
       border-radius: 20px;
-      font-size: .82rem; font-weight: 600;
+      font-size: .82rem;
+      font-weight: 600;
       margin-bottom: 1.5rem;
     }
+
     .hero__title {
       color: var(--white);
       margin-bottom: 1.25rem;
       line-height: 1.15;
     }
-    .hero__title .accent { color: var(--red-light); }
-    .hero__title .hanzi { color: var(--gold); font-size: .85em; }
-    .hero__desc { color: var(--gray-400); font-size: 1.05rem; line-height: 1.75; margin-bottom: 2rem; max-width: 480px; }
-    .hero__actions { display: flex; gap: 1rem; flex-wrap: wrap; }
-    .hero__stats {
-      display: flex; gap: 2.5rem; margin-top: 3rem;
-      padding-top: 2rem;
-      border-top: 1px solid rgba(255,255,255,.1);
+
+    .hero__title .accent {
+      color: var(--red-light);
     }
-    .hero__stat-num { font-size: 1.8rem; font-weight: 900; color: var(--white); font-family: var(--font-heading); }
-    .hero__stat-label { font-size: .78rem; color: var(--gray-600); }
+
+    .hero__title .hanzi {
+      color: var(--gold);
+      font-size: .85em;
+    }
+
+    .hero__desc {
+      color: var(--gray-400);
+      font-size: 1.05rem;
+      line-height: 1.75;
+      margin-bottom: 2rem;
+      max-width: 480px;
+    }
+
+    .hero__actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .hero__stats {
+      display: flex;
+      gap: 2.5rem;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, .1);
+    }
+
+    .hero__stat-num {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--white);
+      font-family: var(--font-heading);
+    }
+
+    .hero__stat-label {
+      font-size: .78rem;
+      color: var(--gray-600);
+    }
 
     /* Floating cards */
     .hero__cards {
-      position: absolute; right: clamp(2rem, 8vw, 6rem); top: 50%;
+      position: absolute;
+      right: clamp(2rem, 8vw, 6rem);
+      top: 50%;
       transform: translateY(-50%);
       display: none;
     }
-    @media (min-width: 1024px) { .hero__cards { display: block; } }
+
+    @media (min-width: 1024px) {
+      .hero__cards {
+        display: block;
+      }
+    }
+
     .float-card {
-      width: 160px; height: 220px;
+      width: 160px;
+      height: 220px;
       background: var(--white);
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-lg);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: .75rem; padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: .75rem;
+      padding: 1rem;
       position: absolute;
     }
-    .float-card .hanzi { font-family: var(--font-heading); font-size: 4rem; font-weight: 900; color: var(--red); }
-    .float-card .pinyin { font-size: .9rem; color: var(--gray-600); }
-    .float-card .meaning { font-size: .78rem; color: var(--gray-400); }
-    .float-card:nth-child(1) { top: -40px; left: 0; transform: rotate(-6deg); z-index: 1; }
-    .float-card:nth-child(2) { top: 40px; left: 80px; transform: rotate(4deg); z-index: 3; background: var(--red); }
-    .float-card:nth-child(2) .hanzi { color: var(--white); }
-    .float-card:nth-child(2) .pinyin { color: rgba(255,255,255,.7); }
-    .float-card:nth-child(2) .meaning { color: rgba(255,255,255,.5); }
-    .float-card:nth-child(3) { top: 100px; left: -40px; transform: rotate(3deg); z-index: 2; background: var(--cream-dk); }
-    @keyframes floatAnim {
-      0%, 100% { transform: rotate(-6deg) translateY(0); }
-      50% { transform: rotate(-6deg) translateY(-8px); }
+
+    .float-card .hanzi {
+      font-family: var(--font-heading);
+      font-size: 4rem;
+      font-weight: 900;
+      color: var(--red);
     }
-    .float-card:nth-child(1) { animation: floatAnim 3s ease-in-out infinite; }
+
+    .float-card .pinyin {
+      font-size: .9rem;
+      color: var(--gray-600);
+    }
+
+    .float-card .meaning {
+      font-size: .78rem;
+      color: var(--gray-400);
+    }
+
+    .float-card:nth-child(1) {
+      top: -40px;
+      left: 0;
+      transform: rotate(-6deg);
+      z-index: 1;
+    }
+
+    .float-card:nth-child(2) {
+      top: 40px;
+      left: 80px;
+      transform: rotate(4deg);
+      z-index: 3;
+      background: var(--red);
+    }
+
+    .float-card:nth-child(2) .hanzi {
+      color: var(--white);
+    }
+
+    .float-card:nth-child(2) .pinyin {
+      color: rgba(255, 255, 255, .7);
+    }
+
+    .float-card:nth-child(2) .meaning {
+      color: rgba(255, 255, 255, .5);
+    }
+
+    .float-card:nth-child(3) {
+      top: 100px;
+      left: -40px;
+      transform: rotate(3deg);
+      z-index: 2;
+      background: var(--cream-dk);
+    }
+
+    @keyframes floatAnim {
+
+      0%,
+      100% {
+        transform: rotate(-6deg) translateY(0);
+      }
+
+      50% {
+        transform: rotate(-6deg) translateY(-8px);
+      }
+    }
+
+    .float-card:nth-child(1) {
+      animation: floatAnim 3s ease-in-out infinite;
+    }
 
     /* Featured categories strip */
     .categories-strip {
@@ -96,11 +213,18 @@
       background: var(--white);
       border-bottom: 1px solid var(--gray-100);
     }
+
     .categories-strip__inner {
-      display: flex; gap: .75rem; overflow-x: auto;
-      scrollbar-width: none; padding-bottom: .25rem;
+      display: flex;
+      gap: .75rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: .25rem;
     }
-    .categories-strip__inner::-webkit-scrollbar { display: none; }
+
+    .categories-strip__inner::-webkit-scrollbar {
+      display: none;
+    }
 
     /* Video demo */
     .video-section {
@@ -108,26 +232,39 @@
       padding: 4rem clamp(1rem, 5vw, 3rem);
       text-align: center;
     }
+
     .video-embed {
-      max-width: 760px; margin: 2rem auto 0;
+      max-width: 760px;
+      margin: 2rem auto 0;
       aspect-ratio: 16/9;
       background: var(--ink);
       border-radius: var(--radius-lg);
       overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0,0,0,.4);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
     }
+
     .video-play {
-      width: 72px; height: 72px;
+      width: 72px;
+      height: 72px;
       background: var(--red);
       border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.8rem; color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: var(--white);
       box-shadow: var(--shadow-red);
       transition: transform var(--transition);
     }
-    .video-embed:hover .video-play { transform: scale(1.1); }
+
+    .video-embed:hover .video-play {
+      transform: scale(1.1);
+    }
 
     /* Feedback */
     .feedback-card {
@@ -137,311 +274,368 @@
       box-shadow: var(--shadow-sm);
       position: relative;
     }
+
     .feedback-card::before {
       content: '"';
-      position: absolute; top: .5rem; left: 1.25rem;
-      font-size: 5rem; line-height: 1;
+      position: absolute;
+      top: .5rem;
+      left: 1.25rem;
+      font-size: 5rem;
+      line-height: 1;
       font-family: var(--font-heading);
-      color: var(--red); opacity: .12;
+      color: var(--red);
+      opacity: .12;
     }
-    .feedback-card__text { font-size: .92rem; color: var(--ink-mid); line-height: 1.75; margin-bottom: 1.25rem; }
-    .feedback-card__author { display: flex; align-items: center; gap: .75rem; }
+
+    .feedback-card__text {
+      font-size: .92rem;
+      color: var(--ink-mid);
+      line-height: 1.75;
+      margin-bottom: 1.25rem;
+    }
+
+    .feedback-card__author {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+
     .feedback-card__avatar {
-      width: 44px; height: 44px; border-radius: 50%;
-      background: var(--red); color: var(--white);
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 1rem;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--red);
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
       flex-shrink: 0;
     }
-    .feedback-card__name { font-weight: 700; font-size: .9rem; }
-    .feedback-card__role { font-size: .78rem; color: var(--gray-600); }
+
+    .feedback-card__name {
+      font-weight: 700;
+      font-size: .9rem;
+    }
+
+    .feedback-card__role {
+      font-size: .78rem;
+      color: var(--gray-600);
+    }
   </style>
 </head>
+
 <body>
 
-<!-- Navbar -->
-<nav class="navbar">
-  <a href="/" class="navbar__logo">
-    🀄 Chinese<span>Nois</span>
-  </a>
-  <div class="navbar__links">
-    <a href="/">Trang chủ</a>
-    <a href="/products">Sản phẩm</a>
-    <a href="/blog">Blog</a>
-    <a href="/account">Tài khoản</a>
-  </div>
-  <div class="navbar__actions" id="nav-actions">
-    <button onclick="openLoginModal()" class="btn-login">Đăng nhập</button>
-    <button onclick="openRegisterModal()" class="btn btn-primary btn-sm">Đăng ký</button>
-  </div>
-  <a href="/cart" class="navbar__cart" style="margin-left:.5rem">
-    🛒 Giỏ
-    <span class="cart-badge" style="display:none">0</span>
-  </a>
-  <button class="hamburger" aria-label="Menu">
-    <span></span><span></span><span></span>
-  </button>
-</nav>
-
-<!-- Hero -->
-<section class="hero">
-  <div class="hero__pattern"></div>
-  <div class="hero__bg-text">学</div>
-  <div class="hero__content">
-    <div class="hero__eyebrow">✨ Phương pháp học hiện đại</div>
-    <h1 class="hero__title">
-      Học tiếng Trung<br>
-      <span class="hanzi">轻松愉快</span><br>
-      <span class="accent">dễ dàng & vui vẻ</span>
-    </h1>
-    <p class="hero__desc">
-      Bộ bài flashcard tiếng Trung ChineseNois được thiết kế khoa học,
-      giúp bạn ghi nhớ từ vựng nhanh gấp 3 lần so với phương pháp truyền thống.
-    </p>
-    <div class="hero__actions">
-      <a href="/products" class="btn btn-primary btn-lg">Xem bộ bài ngay →</a>
-      <a href="#demo" class="btn btn-ghost btn-lg" style="color:var(--white);border-color:rgba(255,255,255,.3)">▶ Xem demo</a>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/" class="navbar__logo">
+      🀄 Chinese<span>Nois</span>
+    </a>
+    <div class="navbar__links">
+      <a href="/">Trang chủ</a>
+      <a href="/products">Sản phẩm</a>
+      <a href="/blog">Blog</a>
+      <a href="/account">Tài khoản</a>
     </div>
-    <div class="hero__stats">
-      <div><div class="hero__stat-num" id="stat-products">--</div><div class="hero__stat-label">Bộ bài</div></div>
-      <div><div class="hero__stat-num">500+</div><div class="hero__stat-label">Học viên</div></div>
-      <div><div class="hero__stat-num">4.9★</div><div class="hero__stat-label">Đánh giá</div></div>
+    <div class="navbar__actions" id="nav-actions">
+      <button onclick="openLoginModal()" class="btn-login">Đăng nhập</button>
+      <button onclick="openRegisterModal()" class="btn btn-primary btn-sm">Đăng ký</button>
     </div>
-  </div>
-  <div class="hero__cards">
-    <div class="float-card">
-      <div class="hanzi">猫</div>
-      <div class="pinyin">māo</div>
-      <div class="meaning">con mèo</div>
-    </div>
-    <div class="float-card">
-      <div class="hanzi">爱</div>
-      <div class="pinyin">ài</div>
-      <div class="meaning">tình yêu</div>
-    </div>
-    <div class="float-card">
-      <div class="hanzi">书</div>
-      <div class="pinyin">shū</div>
-      <div class="meaning">sách vở</div>
-    </div>
-  </div>
-</section>
+    <a href="/cart" class="navbar__cart" style="margin-left:.5rem">
+      🛒 Giỏ
+      <span class="cart-badge" style="display:none">0</span>
+    </a>
+    <button class="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
 
-<!-- Category Filter Strip -->
-<div class="categories-strip">
-  <div class="categories-strip__inner" id="cat-strip">
-    <a href="/products" class="chip active">Tất cả</a>
-  </div>
-</div>
-
-<!-- Featured Products -->
-<section class="section">
-  <div class="section__header">
-    <div class="section__tag">⭐ Nổi bật</div>
-    <h2 class="section__title">Bộ bài được yêu thích nhất</h2>
-    <p class="section__subtitle">Được lựa chọn bởi hàng trăm phụ huynh và giáo viên tiếng Trung</p>
-  </div>
-  <div class="grid-3" id="featured-grid">
-    <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div><span>Đang tải...</span></div>
-  </div>
-</section>
-
-<!-- New Products -->
-<section class="section section-alt">
-  <div class="section__header">
-    <div class="section__tag">🆕 Mới nhất</div>
-    <h2 class="section__title">Bộ bài mới ra mắt</h2>
-  </div>
-  <div class="grid-4" id="new-grid">
-    <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div></div>
-  </div>
-  <div class="text-center mt-3">
-    <a href="/products" class="btn btn-secondary btn-lg">Xem tất cả sản phẩm →</a>
-  </div>
-</section>
-
-<!-- Video Demo -->
-<section class="video-section" id="demo">
-  <div class="section__tag" style="background:var(--gold);color:var(--ink)">▶ Demo</div>
-  <h2 style="color:var(--white);margin-top:.75rem">Xem cách học với ChineseNois</h2>
-  <p style="color:var(--gray-400);margin-top:.5rem">Chỉ 5 phút mỗi ngày để nắm vững từ vựng tiếng Trung</p>
-  <div class="video-embed" onclick="this.innerHTML='<iframe width=\'100%\' height=\'100%\' src=\'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1\' frameborder=\'0\' allowfullscreen></iframe>'">
-    <div class="video-play">▶</div>
-  </div>
-</section>
-
-<!-- Feedback -->
-<section class="section">
-  <div class="section__header">
-    <div class="section__tag">💬 Cảm nhận</div>
-    <h2 class="section__title">Học viên nói gì về ChineseNois?</h2>
-  </div>
-  <div class="grid-3" id="feedback-grid">
-    <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div></div>
-  </div>
-</section>
-
-<!-- Footer -->
-<footer class="footer">
-  <div class="footer__grid">
-    <div class="footer__brand">
-      <div class="footer__logo">🀄 Chinese<span>Nois</span></div>
-      <p class="footer__tagline">Bộ bài flashcard tiếng Trung được thiết kế khoa học, giúp bạn học tiếng Trung một cách vui vẻ và hiệu quả.</p>
-    </div>
-    <div>
-      <div class="footer__heading">Sản phẩm</div>
-      <div class="footer__links">
-        <a href="/products?category=dong-vat">Bộ bài Động vật</a>
-        <a href="/products?category=nghe-nghiep">Bộ bài Nghề nghiệp</a>
-        <a href="/products?category=hsk-1">Bộ bài HSK 1</a>
-        <a href="/products?category=hsk-2">Bộ bài HSK 2</a>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero__pattern"></div>
+    <div class="hero__bg-text">学</div>
+    <div class="hero__content">
+      <div class="hero__eyebrow">✨ Phương pháp học hiện đại</div>
+      <h1 class="hero__title">
+        Học tiếng Trung<br>
+        <span class="hanzi">轻松愉快</span><br>
+        <span class="accent">dễ dàng & vui vẻ</span>
+      </h1>
+      <p class="hero__desc">
+        Bộ bài flashcard tiếng Trung ChineseNois được thiết kế khoa học,
+        giúp bạn ghi nhớ từ vựng nhanh gấp 3 lần so với phương pháp truyền thống.
+      </p>
+      <div class="hero__actions">
+        <a href="/products" class="btn btn-primary btn-lg">Xem bộ bài ngay →</a>
+        <a href="#demo" class="btn btn-ghost btn-lg" style="color:var(--white);border-color:rgba(255,255,255,.3)">▶ Xem
+          demo</a>
       </div>
-    </div>
-    <div>
-      <div class="footer__heading">Hỗ trợ</div>
-      <div class="footer__links">
-        <a href="/blog">Blog học tiếng Trung</a>
-        <a href="/account">Tài khoản</a>
-        <a href="#">Chính sách đổi trả</a>
-        <a href="#">Liên hệ</a>
-      </div>
-    </div>
-    <div>
-      <div class="footer__heading">Liên hệ</div>
-      <div class="footer__links">
-        <a href="#">📧 chinesenois@gmail.com</a>
-        <a href="#">📞 0981 271 689</a>
-        <a href="#">📍 Hà Nội, Việt Nam</a>
-      </div>
-    </div>
-  </div>
-  <div class="footer__bottom">
-    <span>© 2024 ChineseNois. Mọi quyền được bảo lưu.</span>
-    <div class="footer__social">
-      <a href="#" title="Facebook">f</a>
-      <a href="#" title="TikTok">T</a>
-      <a href="#" title="YouTube">▶</a>
-    </div>
-  </div>
-</footer>
-
-<!-- Auth Modal -->
-<div class="modal-overlay" id="auth-modal">
-  <div class="modal" style="max-width:420px">
-    <div class="modal__header">
-      <span class="modal__title" id="auth-modal-title">Đăng nhập</span>
-      <button class="modal__close" onclick="closeAuthModal()">✕</button>
-    </div>
-    <div class="modal__body">
-      <!-- Login Form -->
-      <div id="login-form">
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-control" id="login-email" placeholder="email@example.com">
+      <div class="hero__stats">
+        <div>
+          <div class="hero__stat-num" id="stat-products">--</div>
+          <div class="hero__stat-label">Bộ bài</div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Mật khẩu</label>
-          <input type="password" class="form-control" id="login-password" placeholder="••••••••">
+        <div>
+          <div class="hero__stat-num">500+</div>
+          <div class="hero__stat-label">Học viên</div>
         </div>
-        <button class="btn btn-primary btn-block" onclick="doLogin()">Đăng nhập</button>
-        <p style="text-align:center;margin-top:1rem;font-size:.84rem;color:var(--gray-600)">
-          <a href="#" onclick="showForgot()" style="color:var(--red)">Quên mật khẩu?</a>
-          &nbsp;·&nbsp;
-          <a href="#" onclick="showRegister()" style="color:var(--red)">Đăng ký ngay</a>
-        </p>
-        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--gray-100)">
-          <p style="text-align:center;font-size:.8rem;color:var(--gray-600);margin-bottom:.75rem">Hoặc đăng nhập với</p>
-          <div style="display:flex;gap:.75rem">
-            <button class="btn btn-ghost btn-block" style="font-size:.85rem">
-              <img src="https://www.google.com/favicon.ico" style="width:16px;height:16px"> Google
-            </button>
-            <button class="btn btn-ghost btn-block" style="font-size:.85rem;background:#1877f2;color:white;border-color:#1877f2">
-              f Facebook
-            </button>
+        <div>
+          <div class="hero__stat-num">4.9★</div>
+          <div class="hero__stat-label">Đánh giá</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero__cards">
+      <div class="float-card">
+        <div class="hanzi">猫</div>
+        <div class="pinyin">māo</div>
+        <div class="meaning">con mèo</div>
+      </div>
+      <div class="float-card">
+        <div class="hanzi">爱</div>
+        <div class="pinyin">ài</div>
+        <div class="meaning">tình yêu</div>
+      </div>
+      <div class="float-card">
+        <div class="hanzi">书</div>
+        <div class="pinyin">shū</div>
+        <div class="meaning">sách vở</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Category Filter Strip -->
+  <div class="categories-strip">
+    <div class="categories-strip__inner" id="cat-strip">
+      <a href="/products" class="chip active">Tất cả</a>
+    </div>
+  </div>
+
+  <!-- Featured Products -->
+  <section class="section">
+    <div class="section__header">
+      <div class="section__tag">⭐ Nổi bật</div>
+      <h2 class="section__title">Bộ bài được yêu thích nhất</h2>
+      <p class="section__subtitle">Được lựa chọn bởi hàng trăm phụ huynh và giáo viên tiếng Trung</p>
+    </div>
+    <div class="grid-3" id="featured-grid">
+      <div class="loading-state" style="grid-column:1/-1">
+        <div class="spinner"></div><span>Đang tải...</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- New Products -->
+  <section class="section section-alt">
+    <div class="section__header">
+      <div class="section__tag">🆕 Mới nhất</div>
+      <h2 class="section__title">Bộ bài mới ra mắt</h2>
+    </div>
+    <div class="grid-4" id="new-grid">
+      <div class="loading-state" style="grid-column:1/-1">
+        <div class="spinner"></div>
+      </div>
+    </div>
+    <div class="text-center mt-3">
+      <a href="/products" class="btn btn-secondary btn-lg">Xem tất cả sản phẩm →</a>
+    </div>
+  </section>
+
+  <!-- Video Demo -->
+  <section class="video-section" id="demo">
+    <div class="section__tag" style="background:var(--gold);color:var(--ink)">▶ Demo</div>
+    <h2 style="color:var(--white);margin-top:.75rem">Xem cách học với ChineseNois</h2>
+    <p style="color:var(--gray-400);margin-top:.5rem">Chỉ 5 phút mỗi ngày để nắm vững từ vựng tiếng Trung</p>
+    <div class="video-embed"
+      onclick="this.innerHTML='<iframe width=\'100%\' height=\'100%\' src=\'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1\' frameborder=\'0\' allowfullscreen></iframe>'">
+      <div class="video-play">▶</div>
+    </div>
+  </section>
+
+  <!-- Feedback -->
+  <section class="section">
+    <div class="section__header">
+      <div class="section__tag">💬 Cảm nhận</div>
+      <h2 class="section__title">Học viên nói gì về ChineseNois?</h2>
+    </div>
+    <div class="grid-3" id="feedback-grid">
+      <div class="loading-state" style="grid-column:1/-1">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <div class="footer__logo">🀄 Chinese<span>Nois</span></div>
+        <p class="footer__tagline">Bộ bài flashcard tiếng Trung được thiết kế khoa học, giúp bạn học tiếng Trung một
+          cách vui vẻ và hiệu quả.</p>
+      </div>
+      <div>
+        <div class="footer__heading">Sản phẩm</div>
+        <div class="footer__links">
+          <a href="/products?category=dong-vat">Bộ bài Động vật</a>
+          <a href="/products?category=nghe-nghiep">Bộ bài Nghề nghiệp</a>
+          <a href="/products?category=hsk-1">Bộ bài HSK 1</a>
+          <a href="/products?category=hsk-2">Bộ bài HSK 2</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer__heading">Hỗ trợ</div>
+        <div class="footer__links">
+          <a href="/blog">Blog học tiếng Trung</a>
+          <a href="/account">Tài khoản</a>
+          <a href="#">Chính sách đổi trả</a>
+          <a href="#">Liên hệ</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer__heading">Liên hệ</div>
+        <div class="footer__links">
+          <a href="#">📧 chinesenois@gmail.com</a>
+          <a href="#">📞 0981 271 689</a>
+          <a href="#">📍 Hà Nội, Việt Nam</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2024 ChineseNois. Mọi quyền được bảo lưu.</span>
+      <div class="footer__social">
+        <a href="#" title="Facebook">f</a>
+        <a href="#" title="TikTok">T</a>
+        <a href="#" title="YouTube">▶</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Auth Modal -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal" style="max-width:420px">
+      <div class="modal__header">
+        <span class="modal__title" id="auth-modal-title">Đăng nhập</span>
+        <button class="modal__close" onclick="closeAuthModal()">✕</button>
+      </div>
+      <div class="modal__body">
+        <!-- Login Form -->
+        <div id="login-form">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" id="login-email" placeholder="email@example.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mật khẩu</label>
+            <input type="password" class="form-control" id="login-password" placeholder="••••••••">
+          </div>
+          <button class="btn btn-primary btn-block" onclick="doLogin()">Đăng nhập</button>
+          <p style="text-align:center;margin-top:1rem;font-size:.84rem;color:var(--gray-600)">
+            <a href="#" onclick="showForgot()" style="color:var(--red)">Quên mật khẩu?</a>
+            &nbsp;·&nbsp;
+            <a href="#" onclick="showRegister()" style="color:var(--red)">Đăng ký ngay</a>
+          </p>
+          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--gray-100)">
+            <p style="text-align:center;font-size:.8rem;color:var(--gray-600);margin-bottom:.75rem">Hoặc đăng nhập với
+            </p>
+            <div style="display:flex;gap:.75rem">
+              <button class="btn btn-ghost btn-block" style="font-size:.85rem" onclick="loginWithGoogle()">
+                <img src="https://www.google.com/favicon.ico" style="width:16px;height:16px"> Google
+              </button>
+              <button class="btn btn-ghost btn-block"
+                style="font-size:.85rem;background:#1877f2;color:white;border-color:#1877f2">
+                f Facebook
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      <!-- Register Form -->
-      <div id="register-form" style="display:none">
-        <div class="form-group">
-          <label class="form-label">Họ và tên</label>
-          <input type="text" class="form-control" id="reg-name" placeholder="Nguyễn Văn A">
+        <!-- Register Form -->
+        <div id="register-form" style="display:none">
+          <div class="form-group">
+            <label class="form-label">Họ và tên</label>
+            <input type="text" class="form-control" id="reg-name" placeholder="Nguyễn Văn A">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" id="reg-email" placeholder="email@example.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mật khẩu</label>
+            <input type="password" class="form-control" id="reg-password" placeholder="Tối thiểu 6 ký tự">
+          </div>
+          <button class="btn btn-primary btn-block" onclick="doRegister()">Tạo tài khoản</button>
+          <p style="text-align:center;margin-top:1rem;font-size:.84rem;color:var(--gray-600)">
+            Đã có tài khoản? <a href="#" onclick="showLogin()" style="color:var(--red)">Đăng nhập</a>
+          </p>
         </div>
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-control" id="reg-email" placeholder="email@example.com">
+        <!-- Forgot Form -->
+        <div id="forgot-form" style="display:none">
+          <p style="font-size:.88rem;color:var(--gray-600);margin-bottom:1rem">Nhập email để nhận link đặt lại mật khẩu
+          </p>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" id="forgot-email" placeholder="email@example.com">
+          </div>
+          <button class="btn btn-primary btn-block" onclick="doForgot()">Gửi yêu cầu</button>
+          <p style="text-align:center;margin-top:1rem;font-size:.84rem"><a href="#" onclick="showLogin()"
+              style="color:var(--red)">← Quay lại đăng nhập</a></p>
         </div>
-        <div class="form-group">
-          <label class="form-label">Mật khẩu</label>
-          <input type="password" class="form-control" id="reg-password" placeholder="Tối thiểu 6 ký tự">
-        </div>
-        <button class="btn btn-primary btn-block" onclick="doRegister()">Tạo tài khoản</button>
-        <p style="text-align:center;margin-top:1rem;font-size:.84rem;color:var(--gray-600)">
-          Đã có tài khoản? <a href="#" onclick="showLogin()" style="color:var(--red)">Đăng nhập</a>
-        </p>
-      </div>
-      <!-- Forgot Form -->
-      <div id="forgot-form" style="display:none">
-        <p style="font-size:.88rem;color:var(--gray-600);margin-bottom:1rem">Nhập email để nhận link đặt lại mật khẩu</p>
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-control" id="forgot-email" placeholder="email@example.com">
-        </div>
-        <button class="btn btn-primary btn-block" onclick="doForgot()">Gửi yêu cầu</button>
-        <p style="text-align:center;margin-top:1rem;font-size:.84rem"><a href="#" onclick="showLogin()" style="color:var(--red)">← Quay lại đăng nhập</a></p>
       </div>
     </div>
   </div>
-</div>
 
-<div class="toast-container"></div>
+  <div class="toast-container"></div>
 
-<script src="/static/js/app.js"></script>
-<script>
-// Auth modal
-function openLoginModal() { document.getElementById('auth-modal').classList.add('open'); showLogin(); }
-function openRegisterModal() { document.getElementById('auth-modal').classList.add('open'); showRegister(); }
-function closeAuthModal() { document.getElementById('auth-modal').classList.remove('open'); }
-function showLogin() { document.getElementById('login-form').style.display=''; document.getElementById('register-form').style.display='none'; document.getElementById('forgot-form').style.display='none'; document.getElementById('auth-modal-title').textContent='Đăng nhập'; }
-function showRegister() { document.getElementById('login-form').style.display='none'; document.getElementById('register-form').style.display=''; document.getElementById('forgot-form').style.display='none'; document.getElementById('auth-modal-title').textContent='Đăng ký'; }
-function showForgot() { document.getElementById('login-form').style.display='none'; document.getElementById('forgot-form').style.display=''; document.getElementById('auth-modal-title').textContent='Quên mật khẩu'; }
-document.getElementById('auth-modal').addEventListener('click', e => { if(e.target===e.currentTarget) closeAuthModal(); });
+  <script src="/static/js/app.js"></script>
+  <script>
+    // Auth modal
+    function openLoginModal() { document.getElementById('auth-modal').classList.add('open'); showLogin(); }
+    function openRegisterModal() { document.getElementById('auth-modal').classList.add('open'); showRegister(); }
+    function closeAuthModal() { document.getElementById('auth-modal').classList.remove('open'); }
+    function loginWithGoogle() {
+      window.location.href = '/api/auth/google';
+    }
+    function showLogin() { document.getElementById('login-form').style.display = ''; document.getElementById('register-form').style.display = 'none'; document.getElementById('forgot-form').style.display = 'none'; document.getElementById('auth-modal-title').textContent = 'Đăng nhập'; }
+    function showRegister() { document.getElementById('login-form').style.display = 'none'; document.getElementById('register-form').style.display = ''; document.getElementById('forgot-form').style.display = 'none'; document.getElementById('auth-modal-title').textContent = 'Đăng ký'; }
+    function showForgot() { document.getElementById('login-form').style.display = 'none'; document.getElementById('forgot-form').style.display = ''; document.getElementById('auth-modal-title').textContent = 'Quên mật khẩu'; }
+    document.getElementById('auth-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeAuthModal(); });
 
-async function doLogin() {
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
-  try {
-    await api('POST', '/api/auth/login', { email, password });
-    toast('Đăng nhập thành công!', 'success');
-    closeAuthModal(); location.reload();
-  } catch(e) { toast(e.message, 'error'); }
-}
-async function doRegister() {
-  const name = document.getElementById('reg-name').value;
-  const email = document.getElementById('reg-email').value;
-  const password = document.getElementById('reg-password').value;
-  try {
-    await api('POST', '/api/auth/register', { name, email, password });
-    toast('Đăng ký thành công!', 'success');
-    closeAuthModal(); location.reload();
-  } catch(e) { toast(e.message, 'error'); }
-}
-async function doForgot() {
-  const email = document.getElementById('forgot-email').value;
-  try {
-    await api('POST', '/api/auth/forgot-password', { email });
-    toast('Đã gửi link đặt lại mật khẩu!', 'success');
-    showLogin();
-  } catch(e) { toast(e.message, 'error'); }
-}
+    async function doLogin() {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      try {
+        await api('POST', '/api/auth/login', { email, password });
+        toast('Đăng nhập thành công!', 'success');
+        closeAuthModal(); location.reload();
+      } catch (e) { toast(e.message, 'error'); }
+    }
+    async function doRegister() {
+      const name = document.getElementById('reg-name').value;
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
+      try {
+        await api('POST', '/api/auth/register', { name, email, password });
+        toast('Đăng ký thành công!', 'success');
+        closeAuthModal(); location.reload();
+      } catch (e) { toast(e.message, 'error'); }
+    }
+    async function doForgot() {
+      const email = document.getElementById('forgot-email').value;
+      try {
+        await api('POST', '/api/auth/forgot-password', { email });
+        toast('Đã gửi link đặt lại mật khẩu!', 'success');
+        showLogin();
+      } catch (e) { toast(e.message, 'error'); }
+    }
 
-function productCardHTML(p) {
-  const discount = p.original_price ? Math.round((1 - p.price/p.original_price)*100) : 0;
-  return `<div class="card product-card" onclick="location.href='/products/${p.id}'">
+    function productCardHTML(p) {
+      const discount = p.original_price ? Math.round((1 - p.price / p.original_price) * 100) : 0;
+      return `<div class="card product-card" onclick="location.href='/products/${p.id}'">
     <div class="product-card__img">
       ${p.image ? `<img src="${p.image}" alt="${p.name}" loading="lazy">` : `<div class="placeholder-img">🀄</div>`}
       ${p.is_new ? '<span class="product-card__badge new">Mới</span>' : ''}
-      ${discount > 0 ? `<span class="product-card__badge sale" style="top:${p.is_new?'38px':'10px'}">-${discount}%</span>` : ''}
+      ${discount > 0 ? `<span class="product-card__badge sale" style="top:${p.is_new ? '38px' : '10px'}">-${discount}%</span>` : ''}
     </div>
     <div class="product-card__body">
       <div class="product-card__name">${p.name}</div>
@@ -456,59 +650,59 @@ function productCardHTML(p) {
       ${p.avg_rating > 0 ? `<div class="product-card__rating"><span style="color:var(--gold)">★</span> ${p.avg_rating} (${p.review_count})</div>` : ''}
     </div>
     <div class="product-card__footer">
-      <button class="btn btn-primary btn-sm" style="flex:1" onclick="event.stopPropagation();addToCart(${p.id},'${p.name}',${p.price},'${p.image||''}')">+ Giỏ hàng</button>
+      <button class="btn btn-primary btn-sm" style="flex:1" onclick="event.stopPropagation();addToCart(${p.id},'${p.name}',${p.price},'${p.image || ''}')">+ Giỏ hàng</button>
       <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();location.href='/products/${p.id}'">Chi tiết</button>
     </div>
   </div>`;
-}
+    }
 
-function addToCart(id, name, price, image) {
-  Cart.add({ id, name, price, image });
-}
+    function addToCart(id, name, price, image) {
+      Cart.add({ id, name, price, image });
+    }
 
-async function loadPage() {
-  // Stats
-  try {
-    const d = await api('GET', '/api/products?limit=1');
-    document.getElementById('stat-products').textContent = d.total + '+';
-  } catch(e){}
+    async function loadPage() {
+      // Stats
+      try {
+        const d = await api('GET', '/api/products?limit=1');
+        document.getElementById('stat-products').textContent = d.total + '+';
+      } catch (e) { }
 
-  // Categories
-  try {
-    const cats = await api('GET', '/api/categories');
-    const strip = document.getElementById('cat-strip');
-    cats.forEach(c => {
-      const a = document.createElement('a');
-      a.href = `/products?category=${c.slug}`;
-      a.className = 'chip';
-      a.textContent = c.name;
-      strip.appendChild(a);
-    });
-  } catch(e){}
+      // Categories
+      try {
+        const cats = await api('GET', '/api/categories');
+        const strip = document.getElementById('cat-strip');
+        cats.forEach(c => {
+          const a = document.createElement('a');
+          a.href = `/products?category=${c.slug}`;
+          a.className = 'chip';
+          a.textContent = c.name;
+          strip.appendChild(a);
+        });
+      } catch (e) { }
 
-  // Featured
-  try {
-    const d = await api('GET', '/api/products?featured=true&limit=6');
-    const grid = document.getElementById('featured-grid');
-    if (d.products.length === 0) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>Chưa có sản phẩm</p></div>'; }
-    else { grid.innerHTML = d.products.map(productCardHTML).join(''); }
-  } catch(e) { console.error(e); }
+      // Featured
+      try {
+        const d = await api('GET', '/api/products?featured=true&limit=6');
+        const grid = document.getElementById('featured-grid');
+        if (d.products.length === 0) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>Chưa có sản phẩm</p></div>'; }
+        else { grid.innerHTML = d.products.map(productCardHTML).join(''); }
+      } catch (e) { console.error(e); }
 
-  // New
-  try {
-    const d = await api('GET', '/api/products?is_new=true&limit=8');
-    const grid = document.getElementById('new-grid');
-    if (d.products.length === 0) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>Chưa có sản phẩm</p></div>'; }
-    else { grid.innerHTML = d.products.map(productCardHTML).join(''); }
-  } catch(e){}
+      // New
+      try {
+        const d = await api('GET', '/api/products?is_new=true&limit=8');
+        const grid = document.getElementById('new-grid');
+        if (d.products.length === 0) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>Chưa có sản phẩm</p></div>'; }
+        else { grid.innerHTML = d.products.map(productCardHTML).join(''); }
+      } catch (e) { }
 
-  // Feedbacks
-  try {
-    const fbs = await api('GET', '/api/feedbacks');
-    const grid = document.getElementById('feedback-grid');
-    if (fbs.length === 0) { grid.innerHTML = '<p class="text-muted text-center" style="grid-column:1/-1">Chưa có phản hồi</p>'; }
-    else {
-      grid.innerHTML = fbs.map(f => `
+      // Feedbacks
+      try {
+        const fbs = await api('GET', '/api/feedbacks');
+        const grid = document.getElementById('feedback-grid');
+        if (fbs.length === 0) { grid.innerHTML = '<p class="text-muted text-center" style="grid-column:1/-1">Chưa có phản hồi</p>'; }
+        else {
+          grid.innerHTML = fbs.map(f => `
         <div class="feedback-card">
           <div class="stars">${renderStars(f.rating)}</div>
           <p class="feedback-card__text">${f.comment}</p>
@@ -521,11 +715,12 @@ async function loadPage() {
           </div>
         </div>
       `).join('');
+        }
+      } catch (e) { }
     }
-  } catch(e){}
-}
 
-document.addEventListener('DOMContentLoaded', () => { initNavAuth(); loadPage(); });
-</script>
+    document.addEventListener('DOMContentLoaded', () => { initNavAuth(); loadPage(); });
+  </script>
 </body>
+
 </html>
