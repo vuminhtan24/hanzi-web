@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: chinesenois
+    runtime: python
+    region: singapore
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DEBUG
+        value: false
+      - key: ADMIN_EMAIL
+        value: admin@chinesenois.com
+      - key: ADMIN_PASSWORD
+        sync: false        # Render sẽ hỏi bạn điền tay, không lộ trong file
+      - key: ADMIN_NAME
+        value: Admin
+      - key: DATABASE_URL
+        sync: false        # Dán Internal URL của PostgreSQL vào đây trên dashboard
+      - key: CORS_ORIGINS
+        sync: false        # Điền sau khi có URL
