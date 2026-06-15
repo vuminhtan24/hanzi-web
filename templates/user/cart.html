@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giỏ hàng — ChineseNois</title>
+  <link rel="stylesheet" href="/static/css/shared.css">
+  <style>
+    .cart-layout { display:grid;grid-template-columns:1fr 360px;gap:2rem;padding:2rem clamp(1rem,5vw,3rem);align-items:start; }
+    @media(max-width:900px){.cart-layout{grid-template-columns:1fr;}}
+    .cart-item { display:grid;grid-template-columns:80px 1fr auto;gap:1rem;padding:1rem;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-sm);align-items:center;margin-bottom:.75rem; }
+    .cart-item__img { width:80px;height:80px;border-radius:var(--radius-sm);overflow:hidden;background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0; }
+    .cart-item__img img { width:100%;height:100%;object-fit:cover; }
+    .cart-item__name { font-weight:600;margin-bottom:.25rem; }
+    .cart-item__price { color:var(--red);font-weight:700; }
+    .qty-mini { display:flex;align-items:center;gap:.5rem;margin-top:.4rem; }
+    .qty-mini button { width:28px;height:28px;border-radius:50%;background:var(--gray-100);border:1.5px solid var(--gray-200);font-weight:700;transition:all var(--transition);display:flex;align-items:center;justify-content:center; }
+    .qty-mini button:hover { background:var(--red);color:var(--white);border-color:var(--red); }
+    .order-summary { background:var(--white);border-radius:var(--radius-lg);padding:1.5rem;box-shadow:var(--shadow);position:sticky;top:calc(var(--nav-h) + 1rem); }
+    .summary-row { display:flex;justify-content:space-between;padding:.4rem 0;font-size:.9rem; }
+    .summary-total { display:flex;justify-content:space-between;padding:.75rem 0;font-size:1.15rem;font-weight:700;border-top:2px solid var(--gray-100);margin-top:.5rem; }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="navbar__logo">🀄 Chinese<span>Nois</span></a>
+  <div class="navbar__links"><a href="/">Trang chủ</a><a href="/products">Sản phẩm</a><a href="/blog">Blog</a><a href="/account">Tài khoản</a></div>
+  <div class="navbar__actions" id="nav-actions"></div>
+  <a href="/cart" class="navbar__cart" style="margin-left:.5rem">🛒 Giỏ <span class="cart-badge" style="display:none">0</span></a>
+  <button class="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<div style="padding:.75rem clamp(1rem,5vw,3rem);background:var(--white);border-bottom:1px solid var(--gray-100)">
+  <div class="breadcrumb"><a href="/">Trang chủ</a><span>›</span><span>Giỏ hàng</span></div>
+  <h1 style="font-size:1.75rem">🛒 Giỏ hàng</h1>
+</div>
+
+<div class="cart-layout">
+  <div>
+    <div id="cart-items"></div>
+    <div id="empty-cart" style="display:none" class="empty-state">
+      <div class="empty-state__icon">🛒</div>
+      <div class="empty-state__title">Giỏ hàng trống</div>
+      <p class="empty-state__sub">Hãy thêm sản phẩm vào giỏ hàng</p>
+      <a href="/products" class="btn btn-primary mt-2">Mua sắm ngay</a>
+    </div>
+  </div>
+  <div class="order-summary">
+    <h3 style="margin-bottom:1rem">Tóm tắt đơn hàng</h3>
+    <div id="summary-rows"></div>
+    <div class="summary-total"><span>Tổng cộng</span><span id="summary-total" style="color:var(--red)">0₫</span></div>
+    <div style="margin-bottom:.75rem;font-size:.8rem;color:var(--gray-600)">
+      🚚 Phí vận chuyển tính khi thanh toán
+    </div>
+    <button class="btn btn-primary btn-block btn-lg" onclick="location.href='/checkout'" id="checkout-btn">Thanh toán →</button>
+    <a href="/products" class="btn btn-ghost btn-block mt-1" style="text-align:center">Tiếp tục mua sắm</a>
+  </div>
+</div>
+
+<div class="toast-container"></div>
+<script src="/static/js/app.js"></script>
+<script>
+function renderCart() {
+  const items = Cart.get();
+  const container = document.getElementById('cart-items');
+  const empty = document.getElementById('empty-cart');
+  const btn = document.getElementById('checkout-btn');
+  if (items.length === 0) { container.innerHTML = ''; empty.style.display = ''; btn.disabled = true; }
+  else { empty.style.display = 'none'; btn.disabled = false; }
+  container.innerHTML = items.map(item => `
+    <div class="cart-item">
+      <div class="cart-item__img">
+        ${item.image ? `<img src="${item.image}" alt="${item.name}">` : '🀄'}
+      </div>
+      <div>
+        <div class="cart-item__name">${item.name}</div>
+        <div class="cart-item__price">${fmtPrice(item.price)}</div>
+        <div class="qty-mini">
+          <button onclick="updateQty(${item.id},-1)">−</button>
+          <span style="font-weight:600">${item.quantity}</span>
+          <button onclick="updateQty(${item.id},1)">+</button>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:700;color:var(--ink)">${fmtPrice(item.price * item.quantity)}</div>
+        <button onclick="removeItem(${item.id})" style="color:var(--red);font-size:.8rem;margin-top:.5rem">Xóa</button>
+      </div>
+    </div>
+  `).join('');
+
+  // Summary
+  const rows = document.getElementById('summary-rows');
+  rows.innerHTML = items.map(i => `
+    <div class="summary-row">
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">${i.name} x${i.quantity}</span>
+      <span style="font-weight:600">${fmtPrice(i.price * i.quantity)}</span>
+    </div>
+  `).join('');
+  document.getElementById('summary-total').textContent = fmtPrice(Cart.total());
+}
+
+function updateQty(id, delta) {
+  const items = Cart.get();
+  const item = items.find(i => i.id === id);
+  if (item) Cart.updateQty(id, item.quantity + delta);
+  renderCart();
+}
+function removeItem(id) { Cart.remove(id); renderCart(); toast('Đã xóa sản phẩm', 'info'); }
+
+document.addEventListener('DOMContentLoaded', () => { initNavAuth(); renderCart(); });
+</script>
+</body>
+</html>

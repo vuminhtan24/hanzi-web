@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — ChineseNois</title>
+  <link rel="stylesheet" href="/static/css/shared.css">
+  <style>
+    .stats-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1.25rem;margin-bottom:2rem; }
+    .recent-orders-card { background:var(--white);border-radius:var(--radius-lg);padding:1.25rem;box-shadow:var(--shadow-sm); }
+    .recent-title { font-size:1rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between; }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="navbar__logo">🀄 Chinese<span>Nois</span> <em style="font-size:.7em;opacity:.7">Admin</em></a>
+  <div class="navbar__links">
+    <a href="/">🏠 Website</a>
+  </div>
+  <div class="navbar__actions">
+    <button onclick="Auth.logout()" class="btn btn-ghost btn-sm" style="color:var(--gray-200);border-color:rgba(255,255,255,.2)">Đăng xuất</button>
+  </div>
+</nav>
+
+<div class="admin-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__section">Tổng quan</div>
+    <a href="/admin" class="sidebar__link active">📊 Dashboard</a>
+    <div class="sidebar__section">Quản lý</div>
+    <a href="/admin/products" class="sidebar__link">📦 Sản phẩm</a>
+    <a href="/admin/orders" class="sidebar__link">🛒 Đơn hàng</a>
+    <a href="/admin/users" class="sidebar__link">👥 Khách hàng</a>
+    <a href="/admin/blogs" class="sidebar__link">📝 Blog</a>
+    <div class="sidebar__section">Khác</div>
+    <a href="/" class="sidebar__link">🌐 Xem website</a>
+  </aside>
+
+  <main class="admin-content">
+    <div class="page-title">📊 Dashboard</div>
+
+    <div class="stats-grid" id="stats-grid">
+      <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div></div>
+    </div>
+
+    <div class="recent-orders-card">
+      <div class="recent-title">
+        🛒 Đơn hàng gần đây
+        <a href="/admin/orders" class="btn btn-ghost btn-sm">Xem tất cả →</a>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Khách hàng</th><th>Sản phẩm</th><th>Tổng tiền</th><th>Thanh toán</th><th>Trạng thái</th><th>Ngày đặt</th></tr>
+          </thead>
+          <tbody id="recent-orders"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast-container"></div>
+<script src="/static/js/app.js"></script>
+<script>
+async function checkAdmin() {
+  const user = await Auth.getUser();
+  if (!user || !user.is_admin) { toast('Cần quyền Admin','error'); setTimeout(()=>location.href='/',1500); return false; }
+  return true;
+}
+
+async function loadDashboard() {
+  if (!await checkAdmin()) return;
+  try {
+    const d = await api('GET', '/api/admin/dashboard');
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card">
+        <div class="stat-card__icon" style="background:#FEE2E2"><span>📦</span></div>
+        <div><div class="stat-card__label">Sản phẩm</div><div class="stat-card__value">${d.total_products}</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon" style="background:#DBEAFE"><span>👥</span></div>
+        <div><div class="stat-card__label">Khách hàng</div><div class="stat-card__value">${d.total_users}</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon" style="background:#D1FAE5"><span>🛒</span></div>
+        <div><div class="stat-card__label">Tổng đơn hàng</div><div class="stat-card__value">${d.total_orders}</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon" style="background:#FEF3C7"><span>⏳</span></div>
+        <div><div class="stat-card__label">Chờ xác nhận</div><div class="stat-card__value" style="color:var(--orange)">${d.pending_orders}</div></div>
+      </div>
+      <div class="stat-card" style="grid-column:span 2">
+        <div class="stat-card__icon" style="background:#FCE7F3"><span>💰</span></div>
+        <div><div class="stat-card__label">Doanh thu (hoàn thành)</div><div class="stat-card__value" style="color:var(--green)">${fmtPrice(d.revenue)}</div></div>
+      </div>
+    `;
+  } catch(e) { toast(e.message,'error'); }
+
+  try {
+    const d = await api('GET', '/api/orders/admin/all?limit=8');
+    const tbody = document.getElementById('recent-orders');
+    if (!d.orders.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center">Chưa có đơn hàng</td></tr>'; return; }
+    tbody.innerHTML = d.orders.map(o => `
+      <tr>
+        <td><b>#${o.id}</b></td>
+        <td>${o.user_name||'N/A'}</td>
+        <td>${o.items.length} sản phẩm</td>
+        <td style="color:var(--red);font-weight:700">${fmtPrice(o.total)}</td>
+        <td>${o.payment_method==='cod'?'💵 COD':o.payment_method==='qr'?'📱 QR':'💳 Online'}</td>
+        <td><span class="badge badge-${o.status}">${STATUS_LABELS[o.status]}</span></td>
+        <td>${fmtDate(o.created_at)}</td>
+      </tr>
+    `).join('');
+  } catch(e){}
+}
+
+document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+</body>
+</html>

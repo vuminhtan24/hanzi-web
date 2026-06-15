@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý đơn hàng — ChineseNois Admin</title>
+  <link rel="stylesheet" href="/static/css/shared.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="navbar__logo">🀄 Chinese<span>Nois</span> <em style="font-size:.7em;opacity:.7">Admin</em></a>
+  <div class="navbar__actions"><button onclick="Auth.logout()" class="btn btn-ghost btn-sm" style="color:var(--gray-200);border-color:rgba(255,255,255,.2)">Đăng xuất</button></div>
+</nav>
+
+<div class="admin-layout">
+  <aside class="sidebar">
+    <div class="sidebar__section">Tổng quan</div>
+    <a href="/admin" class="sidebar__link">📊 Dashboard</a>
+    <div class="sidebar__section">Quản lý</div>
+    <a href="/admin/products" class="sidebar__link">📦 Sản phẩm</a>
+    <a href="/admin/orders" class="sidebar__link active">🛒 Đơn hàng</a>
+    <a href="/admin/users" class="sidebar__link">👥 Khách hàng</a>
+    <a href="/admin/blogs" class="sidebar__link">📝 Blog</a>
+    <div class="sidebar__section">Khác</div>
+    <a href="/" class="sidebar__link">🌐 Xem website</a>
+  </aside>
+
+  <main class="admin-content">
+    <div class="page-title">🛒 Quản lý đơn hàng</div>
+
+    <!-- Status tabs -->
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem">
+      <button class="chip active" onclick="filterStatus('',this)">Tất cả</button>
+      <button class="chip" onclick="filterStatus('pending',this)">⏳ Chờ xác nhận</button>
+      <button class="chip" onclick="filterStatus('confirmed',this)">✅ Đã xác nhận</button>
+      <button class="chip" onclick="filterStatus('shipping',this)">🚚 Đang giao</button>
+      <button class="chip" onclick="filterStatus('completed',this)">🎉 Hoàn thành</button>
+      <button class="chip" onclick="filterStatus('cancelled',this)">❌ Đã hủy</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Khách hàng</th><th>Địa chỉ</th><th>Sản phẩm</th><th>Tổng tiền</th><th>Thanh toán</th><th>Ngày đặt</th><th>Trạng thái</th><th>Hành động</th></tr>
+        </thead>
+        <tbody id="orders-table">
+          <tr><td colspan="9" class="text-center"><div class="loading-state" style="padding:2rem"><div class="spinner"></div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Order detail modal -->
+<div class="modal-overlay" id="order-modal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal__header">
+      <span class="modal__title" id="order-modal-title">Chi tiết đơn hàng</span>
+      <button class="modal__close" onclick="document.getElementById('order-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal__body" id="order-modal-body"></div>
+  </div>
+</div>
+
+<div class="toast-container"></div>
+<script src="/static/js/app.js"></script>
+<script>
+let currentStatus = '';
+
+function filterStatus(status, btn) {
+  currentStatus = status;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  loadOrders();
+}
+
+async function loadOrders() {
+  const tbody = document.getElementById('orders-table');
+  tbody.innerHTML = '<tr><td colspan="9" class="text-center"><div class="loading-state" style="padding:2rem"><div class="spinner"></div></div></td></tr>';
+  try {
+    let url = '/api/orders/admin/all?limit=100';
+    if (currentStatus) url += `&status=${currentStatus}`;
+    const d = await api('GET', url);
+    if (!d.orders.length) { tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Không có đơn hàng</td></tr>'; return; }
+    tbody.innerHTML = d.orders.map(o => `
+      <tr>
+        <td><b>#${o.id}</b></td>
+        <td>
+          <div style="font-weight:600">${o.name}</div>
+          <div style="font-size:.78rem;color:var(--gray-600)">${o.phone}</div>
+          <div style="font-size:.75rem;color:var(--gray-400)">${o.user_email||''}</div>
+        </td>
+        <td style="font-size:.8rem;max-width:160px;word-break:break-word">${o.address}</td>
+        <td>${o.items.length} sp</td>
+        <td style="font-weight:700;color:var(--red)">${fmtPrice(o.total)}</td>
+        <td>${o.payment_method==='cod'?'💵 COD':o.payment_method==='qr'?'📱 QR':'💳 Online'}</td>
+        <td style="font-size:.8rem">${fmtDate(o.created_at)}</td>
+        <td><span class="badge badge-${o.status}">${STATUS_LABELS[o.status]||o.status}</span></td>
+        <td>
+          <div style="display:flex;gap:.35rem;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick='showOrderDetail(${JSON.stringify(o).replace(/'/g,"&#39;")})'>🔍</button>
+            <select class="form-control" style="padding:.3rem .5rem;font-size:.78rem;width:auto" onchange="changeStatus(${o.id},this.value,this)">
+              ${['pending','confirmed','shipping','completed','cancelled'].map(s =>
+                `<option value="${s}"${o.status===s?' selected':''}>${STATUS_LABELS[s]}</option>`
+              ).join('')}
+            </select>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch(e) { tbody.innerHTML = `<tr><td colspan="9" style="color:var(--red)">Lỗi: ${e.message}</td></tr>`; }
+}
+
+function showOrderDetail(o) {
+  document.getElementById('order-modal-title').textContent = `Chi tiết đơn #${o.id}`;
+  document.getElementById('order-modal-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem .75rem;font-size:.88rem;margin-bottom:1.25rem">
+      <div><b>Khách hàng:</b> ${o.name}</div>
+      <div><b>Điện thoại:</b> ${o.phone}</div>
+      <div style="grid-column:1/-1"><b>Địa chỉ:</b> ${o.address}</div>
+      <div><b>Thanh toán:</b> ${o.payment_method==='cod'?'COD':o.payment_method==='qr'?'QR':'Online'}</div>
+      <div><b>Ngày đặt:</b> ${fmtDate(o.created_at)}</div>
+      ${o.note ? `<div style="grid-column:1/-1"><b>Ghi chú:</b> ${o.note}</div>` : ''}
+    </div>
+    <h4 style="margin-bottom:.75rem;font-size:.9rem">Sản phẩm</h4>
+    ${o.items.map(i => `
+      <div style="display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid var(--gray-100);font-size:.88rem">
+        <div style="width:44px;height:44px;border-radius:var(--radius-sm);overflow:hidden;background:var(--gray-100);flex-shrink:0;display:flex;align-items:center;justify-content:center">
+          ${i.product_image ? `<img src="${i.product_image}" style="width:100%;height:100%;object-fit:cover">` : '🀄'}
+        </div>
+        <span style="flex:1">${i.product_name}</span>
+        <span>x${i.quantity}</span>
+        <span style="font-weight:700">${fmtPrice(i.price * i.quantity)}</span>
+      </div>
+    `).join('')}
+    <div style="display:flex;justify-content:space-between;font-size:1rem;font-weight:700;margin-top:1rem;padding-top:.75rem;border-top:2px solid var(--gray-100)">
+      <span>Tổng cộng</span><span style="color:var(--red)">${fmtPrice(o.total)}</span>
+    </div>
+  `;
+  document.getElementById('order-modal').classList.add('open');
+}
+
+async function changeStatus(id, status, selectEl) {
+  try {
+    await api('PUT', `/api/orders/${id}/status`, { status });
+    toast(`Cập nhật đơn #${id} → ${STATUS_LABELS[status]}`, 'success');
+    loadOrders();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function init() {
+  const user = await Auth.getUser();
+  if (!user || !user.is_admin) { location.href = '/'; return; }
+  loadOrders();
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

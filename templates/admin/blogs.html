@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý Blog — ChineseNois Admin</title>
+  <link rel="stylesheet" href="/static/css/shared.css">
+  <style>
+    .modal.wide { max-width:700px; }
+    .editor-area { min-height:300px;font-family:var(--font-body);font-size:.9rem;resize:vertical; }
+    .thumb-preview { width:100%;height:160px;background:var(--gray-100);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:3rem;overflow:hidden;cursor:pointer;border:2px dashed var(--gray-200); }
+    .thumb-preview img { width:100%;height:100%;object-fit:cover; }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="navbar__logo">🀄 Chinese<span>Nois</span> <em style="font-size:.7em;opacity:.7">Admin</em></a>
+  <div class="navbar__actions"><button onclick="Auth.logout()" class="btn btn-ghost btn-sm" style="color:var(--gray-200);border-color:rgba(255,255,255,.2)">Đăng xuất</button></div>
+</nav>
+
+<div class="admin-layout">
+  <aside class="sidebar">
+    <a href="/admin" class="sidebar__link">📊 Dashboard</a>
+    <a href="/admin/products" class="sidebar__link">📦 Sản phẩm</a>
+    <a href="/admin/orders" class="sidebar__link">🛒 Đơn hàng</a>
+    <a href="/admin/users" class="sidebar__link">👥 Khách hàng</a>
+    <a href="/admin/blogs" class="sidebar__link active">📝 Blog</a>
+    <a href="/" class="sidebar__link">🌐 Xem website</a>
+  </aside>
+
+  <main class="admin-content">
+    <div class="page-title">
+      📝 Quản lý Blog
+      <button class="btn btn-primary btn-sm" onclick="openCreate()">+ Viết bài mới</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Ảnh bìa</th><th>Tiêu đề</th><th>Ngày đăng</th><th>Hành động</th></tr></thead>
+        <tbody id="blogs-table">
+          <tr><td colspan="4" class="text-center"><div class="loading-state" style="padding:2rem"><div class="spinner"></div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Blog modal -->
+<div class="modal-overlay" id="blog-modal">
+  <div class="modal wide">
+    <div class="modal__header">
+      <span class="modal__title" id="blog-modal-title">Viết bài mới</span>
+      <button class="modal__close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="form-group">
+        <label class="form-label">Ảnh bìa</label>
+        <div class="thumb-preview" id="thumb-preview" onclick="document.getElementById('thumb-input').click()">
+          🖼
+          <input type="file" id="thumb-input" accept="image/*" style="display:none" onchange="previewThumb(this)">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tiêu đề bài viết *</label>
+        <input type="text" class="form-control" id="blog-title-input" placeholder="Nhập tiêu đề hấp dẫn...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nội dung (HTML) *</label>
+        <textarea class="form-control editor-area" id="blog-content-input" placeholder="<p>Nội dung bài viết...</p>"></textarea>
+      </div>
+      <div style="display:flex;gap:.75rem">
+        <button class="btn btn-primary" onclick="saveBlog()" id="save-blog-btn">Đăng bài</button>
+        <button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container"></div>
+<script src="/static/js/app.js"></script>
+<script>
+function previewThumb(input) {
+  if (!input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('thumb-preview').innerHTML = `<img src="${e.target.result}"><input type="file" id="thumb-input" accept="image/*" style="display:none" onchange="previewThumb(this)">`;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function openCreate() {
+  document.getElementById('blog-modal-title').textContent = 'Viết bài mới';
+  document.getElementById('blog-title-input').value = '';
+  document.getElementById('blog-content-input').value = '';
+  document.getElementById('thumb-preview').innerHTML = `🖼<input type="file" id="thumb-input" accept="image/*" style="display:none" onchange="previewThumb(this)">`;
+  document.getElementById('blog-modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('blog-modal').classList.remove('open'); }
+
+async function saveBlog() {
+  const btn = document.getElementById('save-blog-btn');
+  btn.disabled = true; btn.textContent = 'Đang lưu...';
+  const fd = new FormData();
+  fd.append('title', document.getElementById('blog-title-input').value);
+  fd.append('content', document.getElementById('blog-content-input').value);
+  const thumbInput = document.getElementById('thumb-input');
+  if (thumbInput && thumbInput.files[0]) fd.append('thumbnail', thumbInput.files[0]);
+  try {
+    await apiForm('POST', '/api/blogs', fd);
+    toast('Đã đăng bài viết!', 'success');
+    closeModal(); loadBlogs();
+  } catch(e) { toast(e.message, 'error'); }
+  btn.disabled = false; btn.textContent = 'Đăng bài';
+}
+
+async function deleteBlog(id) {
+  if (!confirm('Xóa bài viết này?')) return;
+  try {
+    await api('DELETE', `/api/blogs/${id}`);
+    toast('Đã xóa bài viết', 'success');
+    loadBlogs();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function loadBlogs() {
+  const tbody = document.getElementById('blogs-table');
+  try {
+    const blogs = await api('GET', '/api/blogs');
+    if (!blogs.length) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Chưa có bài viết</td></tr>'; return; }
+    tbody.innerHTML = blogs.map(b => `
+      <tr>
+        <td>${b.thumbnail ? `<img src="${b.thumbnail}" style="width:72px;height:48px;object-fit:cover;border-radius:var(--radius-sm)">` : '<span style="font-size:1.5rem">📰</span>'}</td>
+        <td>
+          <div style="font-weight:600">${b.title}</div>
+          <div style="font-size:.75rem;color:var(--gray-400)">/blog/${b.id}</div>
+        </td>
+        <td style="font-size:.82rem;color:var(--gray-600)">${fmtDate(b.created_at)}</td>
+        <td>
+          <div style="display:flex;gap:.5rem">
+            <a href="/blog/${b.id}" target="_blank" class="btn btn-ghost btn-sm">👁 Xem</a>
+            <button class="btn btn-sm" style="background:#FEE2E2;color:var(--red)" onclick="deleteBlog(${b.id})">🗑 Xóa</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch(e) { tbody.innerHTML = `<tr><td colspan="4" style="color:var(--red)">Lỗi tải dữ liệu</td></tr>`; }
+}
+
+async function init() {
+  const user = await Auth.getUser();
+  if (!user || !user.is_admin) { location.href = '/'; return; }
+  loadBlogs();
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

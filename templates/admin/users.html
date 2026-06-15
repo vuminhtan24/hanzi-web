@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý khách hàng — ChineseNois Admin</title>
+  <link rel="stylesheet" href="/static/css/shared.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="navbar__logo">🀄 Chinese<span>Nois</span> <em style="font-size:.7em;opacity:.7">Admin</em></a>
+  <div class="navbar__actions"><button onclick="Auth.logout()" class="btn btn-ghost btn-sm" style="color:var(--gray-200);border-color:rgba(255,255,255,.2)">Đăng xuất</button></div>
+</nav>
+
+<div class="admin-layout">
+  <aside class="sidebar">
+    <a href="/admin" class="sidebar__link">📊 Dashboard</a>
+    <a href="/admin/products" class="sidebar__link">📦 Sản phẩm</a>
+    <a href="/admin/orders" class="sidebar__link">🛒 Đơn hàng</a>
+    <a href="/admin/users" class="sidebar__link active">👥 Khách hàng</a>
+    <a href="/admin/blogs" class="sidebar__link">📝 Blog</a>
+    <a href="/" class="sidebar__link">🌐 Xem website</a>
+  </aside>
+
+  <main class="admin-content">
+    <div class="page-title">👥 Danh sách khách hàng</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Tên</th><th>Email</th><th>Đăng ký</th><th>Đơn hàng</th><th>Vai trò</th></tr>
+        </thead>
+        <tbody id="users-table">
+          <tr><td colspan="6" class="text-center"><div class="loading-state" style="padding:2rem"><div class="spinner"></div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<div class="toast-container"></div>
+<script src="/static/js/app.js"></script>
+<script>
+async function init() {
+  const user = await Auth.getUser();
+  if (!user || !user.is_admin) { location.href = '/'; return; }
+  try {
+    const users = await api('GET', '/api/admin/users');
+    const tbody = document.getElementById('users-table');
+    if (!users.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Không có khách hàng</td></tr>'; return; }
+    tbody.innerHTML = users.map(u => `
+      <tr>
+        <td>${u.id}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:.5rem">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--red);color:white;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0">${u.name.charAt(0).toUpperCase()}</div>
+            <span style="font-weight:600">${u.name}</span>
+          </div>
+        </td>
+        <td>${u.email}</td>
+        <td style="font-size:.82rem;color:var(--gray-600)">${fmtDate(u.created_at)}</td>
+        <td><span style="font-weight:700">${u.order_count}</span> đơn</td>
+        <td>${u.is_admin ? '<span class="badge" style="background:#FEF3C7;color:#92400E">Admin</span>' : '<span class="badge" style="background:var(--gray-100);color:var(--gray-600)">Khách hàng</span>'}</td>
+      </tr>
+    `).join('');
+  } catch(e) { toast(e.message,'error'); }
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

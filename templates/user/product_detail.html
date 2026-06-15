@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết sản phẩm — ChineseNois</title>
+  <link rel="stylesheet" href="/static/css/shared.css">
+  <style>
+    .detail-layout { display:grid; grid-template-columns:1fr 1fr; gap:3rem; padding:2.5rem clamp(1rem,5vw,3rem); align-items:start; }
+    @media(max-width:768px){.detail-layout{grid-template-columns:1fr;gap:1.5rem;}}
+    .product-images__main { aspect-ratio:4/3; background:var(--gray-100); border-radius:var(--radius-lg); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:5rem; }
+    .product-images__main img { width:100%;height:100%;object-fit:cover; }
+    .previews-strip { display:flex;gap:.5rem;margin-top:.75rem;overflow-x:auto; }
+    .preview-thumb { width:72px;height:72px;border-radius:var(--radius-sm);overflow:hidden;cursor:pointer;border:2px solid transparent;flex-shrink:0; }
+    .preview-thumb.active { border-color:var(--red); }
+    .preview-thumb img { width:100%;height:100%;object-fit:cover; }
+    .product-title { font-size:1.6rem;margin-bottom:.5rem; }
+    .product-meta { display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;font-size:.85rem;color:var(--gray-600); }
+    .product-price-block { display:flex;align-items:baseline;gap:.75rem;margin-bottom:1.25rem; }
+    .product-price-block .price-current { font-size:2rem; }
+    .qty-control { display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem; }
+    .qty-btn { width:36px;height:36px;border-radius:50%;background:var(--gray-100);border:1.5px solid var(--gray-200);font-size:1.1rem;font-weight:700;transition:all var(--transition);display:flex;align-items:center;justify-content:center; }
+    .qty-btn:hover { background:var(--red);color:var(--white);border-color:var(--red); }
+    .qty-num { font-size:1.1rem;font-weight:700;min-width:32px;text-align:center; }
+    .tabs { display:flex;gap:0;border-bottom:2px solid var(--gray-100);margin-bottom:1.5rem; }
+    .tab-btn { padding:.65rem 1.25rem;font-weight:600;font-size:.88rem;color:var(--gray-600);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all var(--transition); }
+    .tab-btn.active { color:var(--red);border-bottom-color:var(--red); }
+    .review-item { padding:1rem 0;border-bottom:1px solid var(--gray-100); }
+    .review-item:last-child { border-bottom:none; }
+    .review-header { display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem; }
+    .review-avatar { width:38px;height:38px;border-radius:50%;background:var(--red);color:var(--white);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0; }
+    .star-select { display:flex;gap:.25rem;font-size:1.5rem;cursor:pointer; }
+    .star-select span { color:var(--gray-200);transition:color .15s; }
+    .star-select span.active { color:var(--gold); }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="navbar__logo">🀄 Chinese<span>Nois</span></a>
+  <div class="navbar__links"><a href="/">Trang chủ</a><a href="/products">Sản phẩm</a><a href="/blog">Blog</a><a href="/account">Tài khoản</a></div>
+  <div class="navbar__actions" id="nav-actions"></div>
+  <a href="/cart" class="navbar__cart" style="margin-left:.5rem">🛒 Giỏ <span class="cart-badge" style="display:none">0</span></a>
+  <button class="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<div style="padding:.75rem clamp(1rem,5vw,3rem);background:var(--white);border-bottom:1px solid var(--gray-100)">
+  <div class="breadcrumb"><a href="/">Trang chủ</a><span>›</span><a href="/products">Sản phẩm</a><span>›</span><span id="bc-name">...</span></div>
+</div>
+
+<div class="detail-layout" id="product-loading" style="display:flex;align-items:center;justify-content:center;min-height:400px">
+  <div class="loading-state"><div class="spinner"></div><span>Đang tải...</span></div>
+</div>
+<div id="product-detail" style="display:none">
+  <div class="detail-layout">
+    <!-- Images -->
+    <div>
+      <div class="product-images__main" id="main-img">🀄</div>
+      <div class="previews-strip" id="previews-strip"></div>
+    </div>
+    <!-- Info -->
+    <div>
+      <div class="product-meta" id="p-meta"></div>
+      <h1 class="product-title" id="p-name"></h1>
+      <div style="margin-bottom:.75rem" id="p-rating"></div>
+      <div class="product-price-block" id="p-price"></div>
+      <div style="margin-bottom:1rem;font-size:.88rem" id="p-stock"></div>
+      <div class="qty-control">
+        <button class="qty-btn" onclick="changeQty(-1)">−</button>
+        <span class="qty-num" id="qty">1</span>
+        <button class="qty-btn" onclick="changeQty(1)">+</button>
+        <span style="font-size:.82rem;color:var(--gray-600)" id="qty-hint"></span>
+      </div>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+        <button class="btn btn-primary btn-lg" style="flex:1" onclick="addToCart()">🛒 Thêm vào giỏ hàng</button>
+        <button class="btn btn-gold btn-lg" onclick="buyNow()">Mua ngay →</button>
+      </div>
+      <div style="margin-top:1.5rem;padding:1rem;background:var(--gray-100);border-radius:var(--radius);font-size:.82rem;color:var(--gray-600)">
+        🚚 Giao hàng toàn quốc · 🔄 Đổi trả 7 ngày · ✓ Hàng chính hãng
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div style="padding:0 clamp(1rem,5vw,3rem) 3rem">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('desc',this)">Mô tả</button>
+      <button class="tab-btn" onclick="switchTab('preview',this)">Xem trước lá bài</button>
+      <button class="tab-btn" onclick="switchTab('reviews',this)" id="reviews-tab-btn">Đánh giá</button>
+    </div>
+    <div id="tab-desc" style="max-width:760px;line-height:1.8;color:var(--ink-mid)" id="p-desc"></div>
+    <div id="tab-preview" style="display:none">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1rem" id="preview-grid"></div>
+    </div>
+    <div id="tab-reviews" style="display:none">
+      <!-- Write review -->
+      <div style="background:var(--gray-100);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem" id="review-form-box">
+        <h4 style="margin-bottom:1rem">Viết đánh giá của bạn</h4>
+        <div style="margin-bottom:.75rem">
+          <label class="form-label">Số sao</label>
+          <div class="star-select" id="star-select">
+            <span onclick="setStar(1)">★</span><span onclick="setStar(2)">★</span>
+            <span onclick="setStar(3)">★</span><span onclick="setStar(4)">★</span><span onclick="setStar(5)">★</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <textarea class="form-control" id="review-comment" rows="3" placeholder="Chia sẻ trải nghiệm của bạn..."></textarea>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="submitReview()">Gửi đánh giá</button>
+      </div>
+      <div id="reviews-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container"></div>
+<script src="/static/js/app.js"></script>
+<script>
+const productId = {{ product_id }};
+let product = null;
+let qty = 1;
+let selectedStar = 5;
+
+function changeQty(delta) {
+  const max = product ? product.stock : 99;
+  qty = Math.max(1, Math.min(max, qty + delta));
+  document.getElementById('qty').textContent = qty;
+}
+
+function setStar(n) {
+  selectedStar = n;
+  document.querySelectorAll('#star-select span').forEach((s,i) => s.classList.toggle('active', i < n));
+}
+setStar(5);
+
+function addToCart() {
+  if (!product) return;
+  Cart.add({ id: product.id, name: product.name, price: product.price, image: product.image }, qty);
+}
+
+function buyNow() {
+  addToCart();
+  location.href = '/cart';
+}
+
+function switchTab(name, btn) {
+  ['desc','preview','reviews'].forEach(t => document.getElementById('tab-'+t).style.display = t===name?'':'none');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setMainImage(src) {
+  const el = document.getElementById('main-img');
+  el.innerHTML = `<img src="${src}" alt="">`;
+  document.querySelectorAll('.preview-thumb').forEach(t => t.classList.remove('active'));
+}
+
+async function submitReview() {
+  const comment = document.getElementById('review-comment').value.trim();
+  if (!comment) { toast('Vui lòng nhập nội dung đánh giá', 'error'); return; }
+  const fd = new FormData();
+  fd.append('rating', selectedStar);
+  fd.append('comment', comment);
+  try {
+    await apiForm('POST', `/api/products/${productId}/reviews`, fd);
+    toast('Đã gửi đánh giá!', 'success');
+    document.getElementById('review-comment').value = '';
+    loadReviews();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+function loadReviews() {
+  const list = document.getElementById('reviews-list');
+  if (!product || !product.reviews) { list.innerHTML = '<p class="text-muted">Chưa có đánh giá</p>'; return; }
+  list.innerHTML = product.reviews.map(r => `
+    <div class="review-item">
+      <div class="review-header">
+        <div class="review-avatar">${(r.user_name||'A').charAt(0)}</div>
+        <div>
+          <div style="font-weight:600;font-size:.9rem">${r.user_name}</div>
+          <div style="color:var(--gold);font-size:.88rem">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
+        </div>
+        <span style="margin-left:auto;font-size:.78rem;color:var(--gray-600)">${fmtDate(r.created_at)}</span>
+      </div>
+      <p style="font-size:.88rem;color:var(--ink-mid)">${r.comment}</p>
+      ${r.image ? `<img src="${r.image}" style="max-width:200px;border-radius:var(--radius-sm);margin-top:.5rem">` : ''}
+    </div>
+  `).join('');
+  document.getElementById('reviews-tab-btn').textContent = `Đánh giá (${product.reviews.length})`;
+}
+
+async function loadProduct() {
+  try {
+    product = await api('GET', `/api/products/${productId}`);
+    document.getElementById('product-loading').style.display = 'none';
+    document.getElementById('product-detail').style.display = '';
+    document.getElementById('bc-name').textContent = product.name;
+
+    // Main image
+    if (product.image) {
+      document.getElementById('main-img').innerHTML = `<img src="${product.image}" alt="${product.name}">`;
+    }
+    // Previews
+    const strip = document.getElementById('previews-strip');
+    const grid = document.getElementById('preview-grid');
+    const allImgs = [product.image, ...(product.preview_images||[])].filter(Boolean);
+    allImgs.forEach((src, i) => {
+      const thumb = document.createElement('div');
+      thumb.className = `preview-thumb${i===0?' active':''}`;
+      thumb.innerHTML = `<img src="${src}" alt="">`;
+      thumb.onclick = () => { setMainImage(src); document.querySelectorAll('.preview-thumb').forEach(t => t.classList.remove('active')); thumb.classList.add('active'); };
+      strip.appendChild(thumb);
+      const gridItem = document.createElement('div');
+      gridItem.style.cssText = 'aspect-ratio:3/4;border-radius:var(--radius);overflow:hidden;cursor:pointer';
+      gridItem.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:cover">`;
+      grid.appendChild(gridItem);
+    });
+
+    document.getElementById('p-name').textContent = product.name;
+    document.getElementById('p-meta').innerHTML = `
+      ${product.category ? `<span>📂 ${product.category}</span>` : ''}
+      ${product.card_count ? `<span>🃏 ${product.card_count} lá bài</span>` : ''}
+      ${product.level ? `<span>📊 ${product.level}</span>` : ''}
+    `;
+    document.getElementById('p-rating').innerHTML = product.avg_rating > 0
+      ? `<span style="color:var(--gold)">★</span> <b>${product.avg_rating}</b> <span style="color:var(--gray-600)">(${product.review_count} đánh giá)</span>`
+      : '<span style="color:var(--gray-400)">Chưa có đánh giá</span>';
+    document.getElementById('p-price').innerHTML = `
+      <span class="price-current">${fmtPrice(product.price)}</span>
+      ${product.original_price ? `<span class="price-original">${fmtPrice(product.original_price)}</span>` : ''}
+    `;
+    const stockEl = document.getElementById('p-stock');
+    if (product.stock > 0) { stockEl.innerHTML = `<span style="color:var(--green)">✓ Còn hàng (${product.stock} sản phẩm)</span>`; }
+    else { stockEl.innerHTML = `<span style="color:var(--red)">✕ Hết hàng</span>`; }
+    document.getElementById('qty-hint').textContent = `Còn ${product.stock}`;
+
+    document.getElementById('tab-desc').textContent = product.description;
+    loadReviews();
+  } catch(e) {
+    document.getElementById('product-loading').innerHTML = `<div class="empty-state"><div class="empty-state__icon">😕</div><div class="empty-state__title">Không tìm thấy sản phẩm</div><a href="/products" class="btn btn-primary mt-2">Quay lại</a></div>`;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { initNavAuth(); loadProduct(); });
+</script>
+</body>
+</html>

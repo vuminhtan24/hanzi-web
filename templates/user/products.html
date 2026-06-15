@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sản phẩm — ChineseNois</title>
+  <link rel="stylesheet" href="/static/css/shared.css">
+  <style>
+    .products-layout { display: grid; grid-template-columns: 240px 1fr; gap: 2rem; padding: 2rem clamp(1rem,5vw,3rem); align-items: start; }
+    @media(max-width:900px){ .products-layout { grid-template-columns: 1fr; } .filters-sidebar { display:none; } .filters-sidebar.open { display:block; } }
+    .filters-sidebar { background: var(--white); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); position: sticky; top: calc(var(--nav-h) + 1rem); }
+    .filter-section { margin-bottom: 1.5rem; }
+    .filter-section h4 { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-600); margin-bottom: .75rem; }
+    .filter-option { display: flex; align-items: center; gap: .5rem; padding: .3rem 0; cursor: pointer; font-size: .88rem; }
+    .filter-option input { accent-color: var(--red); }
+    .products-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: .75rem; }
+    .products-count { font-size: .88rem; color: var(--gray-600); }
+    .search-bar { display: flex; gap: .5rem; flex: 1; max-width: 360px; }
+    .search-bar input { flex: 1; }
+    .filter-toggle { display: none; }
+    @media(max-width:900px){ .filter-toggle { display:flex; } }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="navbar__logo">🀄 Chinese<span>Nois</span></a>
+  <div class="navbar__links">
+    <a href="/">Trang chủ</a><a href="/products">Sản phẩm</a>
+    <a href="/blog">Blog</a><a href="/account">Tài khoản</a>
+  </div>
+  <div class="navbar__actions" id="nav-actions"></div>
+  <a href="/cart" class="navbar__cart" style="margin-left:.5rem">🛒 Giỏ <span class="cart-badge" style="display:none">0</span></a>
+  <button class="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<div style="padding:.75rem clamp(1rem,5vw,3rem);background:var(--white);border-bottom:1px solid var(--gray-100)">
+  <div class="breadcrumb">
+    <a href="/">Trang chủ</a><span>›</span><span>Sản phẩm</span>
+  </div>
+  <h1 style="font-size:1.75rem">Tất cả bộ bài tiếng Trung</h1>
+</div>
+
+<div class="products-layout">
+  <!-- Filters -->
+  <aside class="filters-sidebar" id="filters">
+    <h3 style="margin-bottom:1.25rem;font-size:1rem">🔍 Lọc sản phẩm</h3>
+    <div class="filter-section">
+      <h4>Danh mục</h4>
+      <div id="cat-filters">
+        <label class="filter-option">
+          <input type="radio" name="category" value="" checked onchange="applyFilters()"> Tất cả
+        </label>
+      </div>
+    </div>
+    <div class="filter-section">
+      <h4>Trình độ</h4>
+      <label class="filter-option"><input type="checkbox" value="Cơ bản" onchange="applyFilters()"> Cơ bản</label>
+      <label class="filter-option"><input type="checkbox" value="HSK 1" onchange="applyFilters()"> HSK 1</label>
+      <label class="filter-option"><input type="checkbox" value="HSK 2" onchange="applyFilters()"> HSK 2</label>
+      <label class="filter-option"><input type="checkbox" value="HSK 3" onchange="applyFilters()"> HSK 3</label>
+    </div>
+    <div class="filter-section">
+      <h4>Loại</h4>
+      <label class="filter-option"><input type="checkbox" id="filter-new" onchange="applyFilters()"> Mới nhất</label>
+      <label class="filter-option"><input type="checkbox" id="filter-featured" onchange="applyFilters()"> Nổi bật</label>
+    </div>
+    <button class="btn btn-ghost btn-sm btn-block" onclick="resetFilters()">Xóa bộ lọc</button>
+  </aside>
+
+  <!-- Products -->
+  <div>
+    <div class="products-header">
+      <div class="flex gap-1 flex-wrap">
+        <button class="btn filter-toggle btn-ghost btn-sm" onclick="document.getElementById('filters').classList.toggle('open')">⚙ Bộ lọc</button>
+        <span class="products-count" id="products-count">Đang tải...</span>
+      </div>
+      <div class="search-bar">
+        <input type="text" class="form-control" id="search-input" placeholder="Tìm kiếm bộ bài..." oninput="debounceSearch()">
+        <button class="btn btn-primary btn-sm" onclick="applyFilters()">Tìm</button>
+      </div>
+    </div>
+    <div class="grid-3" id="products-grid">
+      <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div></div>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</div>
+
+<footer class="footer" style="margin-top:3rem">
+  <div class="footer__bottom">
+    <span>© 2024 ChineseNois</span>
+    <div class="footer__social"><a href="#">f</a><a href="#">T</a></div>
+  </div>
+</footer>
+
+<div class="toast-container"></div>
+<script src="/static/js/app.js"></script>
+<script>
+let currentPage = 0;
+const PAGE_SIZE = 12;
+let searchTimer;
+
+function debounceSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(applyFilters, 500); }
+
+function getParams() {
+  const params = new URLSearchParams();
+  const cat = document.querySelector('input[name="category"]:checked');
+  if (cat && cat.value) params.set('category', cat.value);
+  const search = document.getElementById('search-input').value.trim();
+  if (search) params.set('search', search);
+  if (document.getElementById('filter-new').checked) params.set('is_new', 'true');
+  if (document.getElementById('filter-featured').checked) params.set('featured', 'true');
+  params.set('limit', PAGE_SIZE);
+  params.set('offset', currentPage * PAGE_SIZE);
+  return params;
+}
+
+function productCardHTML(p) {
+  const discount = p.original_price ? Math.round((1 - p.price/p.original_price)*100) : 0;
+  return `<div class="card product-card" onclick="location.href='/products/${p.id}'">
+    <div class="product-card__img">
+      ${p.image ? `<img src="${p.image}" alt="${p.name}" loading="lazy">` : `<div class="placeholder-img">🀄</div>`}
+      ${p.is_new ? '<span class="product-card__badge new">Mới</span>' : ''}
+      ${discount > 0 ? `<span class="product-card__badge sale" style="top:${p.is_new?'38px':'10px'}">-${discount}%</span>` : ''}
+    </div>
+    <div class="product-card__body">
+      <div class="product-card__name">${p.name}</div>
+      <div class="product-card__meta">
+        ${p.category ? `<span>📂 ${p.category}</span>` : ''}
+        ${p.card_count ? `<span>🃏 ${p.card_count} lá</span>` : ''}
+        ${p.level ? `<span>📊 ${p.level}</span>` : ''}
+      </div>
+      <div class="product-card__price">
+        <span class="price-current">${fmtPrice(p.price)}</span>
+        ${p.original_price ? `<span class="price-original">${fmtPrice(p.original_price)}</span>` : ''}
+      </div>
+      ${p.avg_rating > 0 ? `<div class="product-card__rating">★ ${p.avg_rating} (${p.review_count})</div>` : ''}
+      <div style="margin-top:.5rem;font-size:.78rem;color:${p.stock>0?'var(--green)':'var(--red)'}">
+        ${p.stock > 0 ? `✓ Còn hàng (${p.stock})` : '✕ Hết hàng'}
+      </div>
+    </div>
+    <div class="product-card__footer">
+      <button class="btn btn-primary btn-sm" style="flex:1" onclick="event.stopPropagation();Cart.add({id:${p.id},name:'${p.name}',price:${p.price},image:'${p.image||''}'})">+ Giỏ hàng</button>
+    </div>
+  </div>`;
+}
+
+async function applyFilters() {
+  currentPage = 0;
+  await loadProducts();
+}
+
+async function loadProducts() {
+  const grid = document.getElementById('products-grid');
+  grid.innerHTML = '<div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div></div>';
+  try {
+    const d = await api('GET', `/api/products?${getParams()}`);
+    document.getElementById('products-count').textContent = `${d.total} sản phẩm`;
+    if (d.products.length === 0) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-state__icon">📦</div><div class="empty-state__title">Không tìm thấy sản phẩm</div><p class="empty-state__sub">Thử điều chỉnh bộ lọc</p></div>`;
+    } else {
+      grid.innerHTML = d.products.map(productCardHTML).join('');
+    }
+    // Pagination
+    const total = Math.ceil(d.total / PAGE_SIZE);
+    const pag = document.getElementById('pagination');
+    pag.innerHTML = '';
+    for (let i = 0; i < total; i++) {
+      const btn = document.createElement('button');
+      btn.className = `page-btn${i === currentPage ? ' active' : ''}`;
+      btn.textContent = i + 1;
+      btn.onclick = () => { currentPage = i; loadProducts(); };
+      pag.appendChild(btn);
+    }
+  } catch(e) { grid.innerHTML = `<p style="grid-column:1/-1;color:var(--red)">Lỗi tải dữ liệu</p>`; }
+}
+
+function resetFilters() {
+  document.querySelector('input[name="category"][value=""]').checked = true;
+  document.getElementById('search-input').value = '';
+  document.getElementById('filter-new').checked = false;
+  document.getElementById('filter-featured').checked = false;
+  applyFilters();
+}
+
+async function init() {
+  initNavAuth();
+  // Load categories
+  try {
+    const cats = await api('GET', '/api/categories');
+    const el = document.getElementById('cat-filters');
+    cats.forEach(c => {
+      const lbl = document.createElement('label');
+      lbl.className = 'filter-option';
+      lbl.innerHTML = `<input type="radio" name="category" value="${c.slug}" onchange="applyFilters()"> ${c.name}`;
+      el.appendChild(lbl);
+    });
+  } catch(e){}
+
+  // URL params
+  const urlParams = new URLSearchParams(window.location.search);
+  const cat = urlParams.get('category');
+  if (cat) {
+    const radio = document.querySelector(`input[name="category"][value="${cat}"]`);
+    if (radio) radio.checked = true;
+  }
+
+  loadProducts();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thanh toán — ChineseNois</title>
+  <link rel="stylesheet" href="/static/css/shared.css">
+  <style>
+    .checkout-layout { display:grid;grid-template-columns:1fr 380px;gap:2rem;padding:2rem clamp(1rem,5vw,3rem);align-items:start; }
+    @media(max-width:900px){.checkout-layout{grid-template-columns:1fr;}}
+    .checkout-card { background:var(--white);border-radius:var(--radius-lg);padding:1.5rem;box-shadow:var(--shadow-sm);margin-bottom:1.25rem; }
+    .checkout-card h3 { font-size:1rem;margin-bottom:1.25rem;padding-bottom:.75rem;border-bottom:1px solid var(--gray-100); }
+    .payment-option { display:flex;align-items:center;gap:.75rem;padding:.75rem;border:2px solid var(--gray-200);border-radius:var(--radius);cursor:pointer;transition:all var(--transition);margin-bottom:.6rem; }
+    .payment-option:hover { border-color:var(--red); }
+    .payment-option.selected { border-color:var(--red);background:rgba(192,57,43,.04); }
+    .payment-option input[type=radio] { accent-color:var(--red); }
+    .payment-icon { font-size:1.5rem;width:36px;text-align:center; }
+    .payment-label { font-weight:600;font-size:.9rem; }
+    .payment-desc { font-size:.78rem;color:var(--gray-600); }
+    .order-summary-sticky { background:var(--white);border-radius:var(--radius-lg);padding:1.5rem;box-shadow:var(--shadow);position:sticky;top:calc(var(--nav-h)+1rem); }
+    .summary-row { display:flex;justify-content:space-between;padding:.35rem 0;font-size:.88rem;color:var(--gray-600); }
+    .summary-total { display:flex;justify-content:space-between;padding:.75rem 0;font-size:1.15rem;font-weight:700;border-top:2px solid var(--gray-100);margin-top:.5rem; }
+    /* QR Modal */
+    .qr-box { text-align:center;padding:1.5rem; }
+    .qr-img { width:240px;height:240px;margin:0 auto 1rem;background:var(--gray-100);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:5rem; }
+    .qr-bank-info { background:var(--gray-100);border-radius:var(--radius);padding:1rem;text-align:left;font-size:.85rem; }
+    .qr-bank-row { display:flex;justify-content:space-between;padding:.3rem 0; }
+    .qr-bank-row span:last-child { font-weight:700;color:var(--ink); }
+    /* Steps */
+    .steps { display:flex;align-items:center;gap:0;margin-bottom:2rem; }
+    .step { display:flex;align-items:center;gap:.5rem;font-size:.82rem;font-weight:600; }
+    .step__num { width:28px;height:28px;border-radius:50%;background:var(--gray-200);color:var(--gray-600);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0; }
+    .step.active .step__num { background:var(--red);color:var(--white); }
+    .step.done .step__num { background:var(--green);color:var(--white); }
+    .step__line { flex:1;height:2px;background:var(--gray-200);margin:0 .5rem; }
+    .step__line.done { background:var(--green); }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="navbar__logo">🀄 Chinese<span>Nois</span></a>
+  <div class="navbar__links"><a href="/">Trang chủ</a><a href="/products">Sản phẩm</a><a href="/blog">Blog</a><a href="/account">Tài khoản</a></div>
+  <div class="navbar__actions" id="nav-actions"></div>
+  <a href="/cart" class="navbar__cart" style="margin-left:.5rem">🛒 Giỏ <span class="cart-badge" style="display:none">0</span></a>
+  <button class="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<div style="padding:.75rem clamp(1rem,5vw,3rem);background:var(--white);border-bottom:1px solid var(--gray-100)">
+  <div class="breadcrumb"><a href="/">Trang chủ</a><span>›</span><a href="/cart">Giỏ hàng</a><span>›</span><span>Thanh toán</span></div>
+  <h1 style="font-size:1.75rem">Thanh toán</h1>
+</div>
+
+<!-- Steps -->
+<div style="padding:1.25rem clamp(1rem,5vw,3rem) 0;background:var(--white)">
+  <div class="steps" style="max-width:440px">
+    <div class="step done"><div class="step__num">✓</div><span>Giỏ hàng</span></div>
+    <div class="step__line done"></div>
+    <div class="step active"><div class="step__num">2</div><span>Thanh toán</span></div>
+    <div class="step__line"></div>
+    <div class="step"><div class="step__num">3</div><span>Xác nhận</span></div>
+  </div>
+</div>
+
+<div class="checkout-layout" id="checkout-content">
+  <!-- Left: Forms -->
+  <div>
+    <!-- Shipping info -->
+    <div class="checkout-card">
+      <h3>📦 Thông tin giao hàng</h3>
+      <div class="form-group">
+        <label class="form-label">Họ và tên *</label>
+        <input type="text" class="form-control" id="ship-name" placeholder="Nguyễn Văn A">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="form-group">
+          <label class="form-label">Số điện thoại *</label>
+          <input type="tel" class="form-control" id="ship-phone" placeholder="0912 345 678">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" id="ship-email" placeholder="email@example.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Địa chỉ giao hàng *</label>
+        <input type="text" class="form-control" id="ship-address" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ghi chú</label>
+        <textarea class="form-control" id="ship-note" rows="2" placeholder="Ghi chú cho người giao hàng..."></textarea>
+      </div>
+    </div>
+
+    <!-- Payment method -->
+    <div class="checkout-card">
+      <h3>💳 Phương thức thanh toán</h3>
+      <div class="payment-option selected" onclick="selectPayment('qr',this)">
+        <input type="radio" name="payment" value="qr" checked>
+        <span class="payment-icon">📱</span>
+        <div>
+          <div class="payment-label">Chuyển khoản QR</div>
+          <div class="payment-desc">Quét mã QR để thanh toán ngay lập tức</div>
+        </div>
+        <span style="margin-left:auto;background:var(--green);color:white;padding:.15rem .5rem;border-radius:20px;font-size:.7rem;font-weight:700">Phổ biến</span>
+      </div>
+      <div class="payment-option" onclick="selectPayment('online',this)">
+        <input type="radio" name="payment" value="online">
+        <span class="payment-icon">💳</span>
+        <div>
+          <div class="payment-label">Thanh toán online (PayOS)</div>
+          <div class="payment-desc">Thẻ ATM, Visa, Mastercard, ví điện tử</div>
+        </div>
+      </div>
+      <div class="payment-option" onclick="selectPayment('cod',this)">
+        <input type="radio" name="payment" value="cod">
+        <span class="payment-icon">💵</span>
+        <div>
+          <div class="payment-label">Thanh toán khi nhận hàng (COD)</div>
+          <div class="payment-desc">Trả tiền mặt khi nhận được hàng</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Summary -->
+  <div>
+    <div class="order-summary-sticky">
+      <h3 style="margin-bottom:1rem">Đơn hàng của bạn</h3>
+      <div id="order-items-summary"></div>
+      <div id="order-rows-summary"></div>
+      <div class="summary-row" style="padding-top:.5rem">
+        <span>Phí vận chuyển</span>
+        <span id="shipping-fee" style="font-weight:600">30.000₫</span>
+      </div>
+      <div class="summary-total">
+        <span>Tổng thanh toán</span>
+        <span id="grand-total" style="color:var(--red)">0₫</span>
+      </div>
+      <button class="btn btn-primary btn-block btn-lg" onclick="placeOrder()" id="place-order-btn">
+        Đặt hàng →
+      </button>
+      <p style="font-size:.75rem;color:var(--gray-600);text-align:center;margin-top:.75rem">
+        🔒 Thông tin được bảo mật bởi SSL
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- QR Payment Modal -->
+<div class="modal-overlay" id="qr-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal__header">
+      <span class="modal__title">📱 Quét QR để thanh toán</span>
+      <button class="modal__close" onclick="closeQR()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="qr-box">
+        <div class="qr-img">📱</div>
+        <p style="font-size:.85rem;color:var(--gray-600);margin-bottom:1rem">Mở app ngân hàng, chọn <b>Quét QR</b> và quét mã trên</p>
+        <div class="qr-bank-info">
+          <div class="qr-bank-row"><span>Ngân hàng</span><span>Vietcombank</span></div>
+          <div class="qr-bank-row"><span>Số tài khoản</span><span>1234567890</span></div>
+          <div class="qr-bank-row"><span>Chủ tài khoản</span><span>CHINESENOIS</span></div>
+          <div class="qr-bank-row"><span>Số tiền</span><span id="qr-amount" style="color:var(--red)">0₫</span></div>
+          <div class="qr-bank-row"><span>Nội dung CK</span><span id="qr-note" style="color:var(--red)">CN#ORDER</span></div>
+        </div>
+        <div style="margin-top:1rem;background:#FEF3C7;border-radius:var(--radius-sm);padding:.75rem;font-size:.8rem;color:#92400E">
+          ⏰ Đơn hàng giữ trong <b id="qr-countdown">10:00</b> phút
+        </div>
+        <button class="btn btn-primary btn-block mt-2" onclick="confirmQRPaid()">Tôi đã thanh toán ✓</button>
+        <button class="btn btn-ghost btn-block mt-1" onclick="closeQR()">Hủy đơn hàng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal-overlay" id="success-modal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal__body" style="text-align:center;padding:2.5rem">
+      <div style="font-size:4rem;margin-bottom:1rem">🎉</div>
+      <h2 style="margin-bottom:.75rem">Đặt hàng thành công!</h2>
+      <p style="color:var(--gray-600);font-size:.9rem;margin-bottom:1.5rem">
+        Cảm ơn bạn đã mua hàng tại ChineseNois. Chúng tôi sẽ liên hệ xác nhận đơn hàng sớm nhất.
+      </p>
+      <div style="background:var(--gray-100);border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem;font-size:.88rem">
+        Mã đơn hàng: <b id="success-order-id" style="color:var(--red)">#...</b>
+      </div>
+      <a href="/account" class="btn btn-primary btn-block">Xem đơn hàng của tôi</a>
+      <a href="/products" class="btn btn-ghost btn-block mt-1">Tiếp tục mua sắm</a>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container"></div>
+<script src="/static/js/app.js"></script>
+<script>
+let selectedPayment = 'qr';
+let qrCountdownTimer;
+
+function selectPayment(method, el) {
+  selectedPayment = method;
+  document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.querySelector(`input[value="${method}"]`).checked = true;
+}
+
+function renderSummary() {
+  const items = Cart.get();
+  document.getElementById('order-items-summary').innerHTML = items.map(i => `
+    <div style="display:flex;gap:.75rem;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--gray-100)">
+      <div style="width:48px;height:48px;border-radius:var(--radius-sm);overflow:hidden;background:var(--gray-100);flex-shrink:0;display:flex;align-items:center;justify-content:center">
+        ${i.image ? `<img src="${i.image}" style="width:100%;height:100%;object-fit:cover">` : '🀄'}
+      </div>
+      <div style="flex:1;overflow:hidden">
+        <div style="font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${i.name}</div>
+        <div style="font-size:.78rem;color:var(--gray-600)">x${i.quantity}</div>
+      </div>
+      <span style="font-weight:700;font-size:.88rem;white-space:nowrap">${fmtPrice(i.price * i.quantity)}</span>
+    </div>
+  `).join('');
+  const subtotal = Cart.total();
+  const grand = subtotal + SHIPPING_FEE;
+  document.getElementById('grand-total').textContent = fmtPrice(grand);
+  document.getElementById('shipping-fee').textContent = fmtPrice(SHIPPING_FEE);
+}
+
+async function placeOrder() {
+  const name = document.getElementById('ship-name').value.trim();
+  const phone = document.getElementById('ship-phone').value.trim();
+  const address = document.getElementById('ship-address').value.trim();
+  if (!name || !phone || !address) { toast('Vui lòng điền đầy đủ thông tin giao hàng', 'error'); return; }
+  if (Cart.count() === 0) { toast('Giỏ hàng trống', 'error'); return; }
+
+  const btn = document.getElementById('place-order-btn');
+  btn.disabled = true; btn.textContent = 'Đang xử lý...';
+
+  try {
+    const user = await Auth.getUser();
+    if (!user) { toast('Vui lòng đăng nhập để đặt hàng', 'error'); btn.disabled = false; btn.textContent = 'Đặt hàng →'; return; }
+
+    const order = await api('POST', '/api/orders', {
+      items: Cart.get().map(i => ({ product_id: i.id, quantity: i.quantity })),
+      name, phone, address,
+      payment_method: selectedPayment,
+      note: document.getElementById('ship-note').value
+    });
+
+    Cart.clear();
+
+    if (selectedPayment === 'qr') {
+      openQRModal(order);
+    } else if (selectedPayment === 'online') {
+      // PayOS redirect (demo)
+      document.getElementById('success-order-id').textContent = '#' + order.id;
+      document.getElementById('success-modal').classList.add('open');
+    } else {
+      document.getElementById('success-order-id').textContent = '#' + order.id;
+      document.getElementById('success-modal').classList.add('open');
+    }
+  } catch(e) {
+    toast(e.message, 'error');
+    btn.disabled = false; btn.textContent = 'Đặt hàng →';
+  }
+}
+
+function openQRModal(order) {
+  const grand = order.total + SHIPPING_FEE;
+  document.getElementById('qr-amount').textContent = fmtPrice(grand);
+  document.getElementById('qr-note').textContent = `CN${order.id}`;
+  document.getElementById('qr-modal').classList.add('open');
+  // Countdown 10 minutes
+  let secs = 600;
+  qrCountdownTimer = setInterval(() => {
+    secs--;
+    const m = Math.floor(secs/60).toString().padStart(2,'0');
+    const s = (secs%60).toString().padStart(2,'0');
+    document.getElementById('qr-countdown').textContent = `${m}:${s}`;
+    if (secs <= 0) { clearInterval(qrCountdownTimer); closeQR(); }
+  }, 1000);
+}
+
+function closeQR() {
+  clearInterval(qrCountdownTimer);
+  document.getElementById('qr-modal').classList.remove('open');
+}
+
+function confirmQRPaid() {
+  clearInterval(qrCountdownTimer);
+  document.getElementById('qr-modal').classList.remove('open');
+  document.getElementById('success-modal').classList.add('open');
+}
+
+// Pre-fill user info
+let SHIPPING_FEE = 30000;
+
+async function init() {
+  initNavAuth();
+  // Load shipping fee từ config
+  try {
+    const cfg = await api('GET', '/api/config');
+    SHIPPING_FEE = cfg.shipping_fee;
+  } catch(e) {}
+  renderSummary();
+  if (Cart.count() === 0) { location.href = '/cart'; return; }
+  const user = await Auth.getUser();
+  if (user) { document.getElementById('ship-name').value = user.name || ''; document.getElementById('ship-email').value = user.email || ''; }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

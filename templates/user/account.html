@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tài khoản — ChineseNois</title>
+  <link rel="stylesheet" href="/static/css/shared.css">
+  <style>
+    .account-layout { display:grid;grid-template-columns:260px 1fr;gap:2rem;padding:2rem clamp(1rem,5vw,3rem); }
+    @media(max-width:768px){.account-layout{grid-template-columns:1fr;}}
+    .account-sidebar { background:var(--white);border-radius:var(--radius-lg);padding:1.5rem;box-shadow:var(--shadow-sm);position:sticky;top:calc(var(--nav-h)+1rem);height:fit-content; }
+    .user-avatar { width:72px;height:72px;border-radius:50%;background:var(--red);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;margin:0 auto 1rem; }
+    .user-avatar img { width:100%;height:100%;object-fit:cover;border-radius:50%; }
+    .acc-menu-item { display:flex;align-items:center;gap:.6rem;padding:.65rem .75rem;border-radius:var(--radius-sm);font-size:.88rem;font-weight:500;color:var(--ink-soft);transition:all var(--transition);cursor:pointer;border:none;background:none;width:100%;text-align:left; }
+    .acc-menu-item:hover { background:var(--gray-100);color:var(--ink); }
+    .acc-menu-item.active { background:rgba(192,57,43,.08);color:var(--red);font-weight:600; }
+    .account-content { min-height:400px; }
+    .content-section { display:none; }
+    .content-section.active { display:block; }
+    .section-title { font-size:1.2rem;font-weight:700;margin-bottom:1.25rem;padding-bottom:.75rem;border-bottom:2px solid var(--gray-100); }
+    /* Order list */
+    .order-card { background:var(--white);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow-sm);margin-bottom:.75rem; }
+    .order-card__header { display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem; }
+    .order-card__items { display:flex;gap:.75rem;overflow-x:auto;margin-bottom:.75rem;padding-bottom:.25rem; }
+    .order-item-thumb { width:60px;height:60px;border-radius:var(--radius-sm);overflow:hidden;background:var(--gray-100);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem; }
+    .order-item-thumb img { width:100%;height:100%;object-fit:cover; }
+    .profile-grid { display:grid;grid-template-columns:1fr 1fr;gap:1rem; }
+    @media(max-width:600px){.profile-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="navbar__logo">🀄 Chinese<span>Nois</span></a>
+  <div class="navbar__links"><a href="/">Trang chủ</a><a href="/products">Sản phẩm</a><a href="/blog">Blog</a><a href="/account">Tài khoản</a></div>
+  <div class="navbar__actions" id="nav-actions"></div>
+  <a href="/cart" class="navbar__cart" style="margin-left:.5rem">🛒 Giỏ <span class="cart-badge" style="display:none">0</span></a>
+  <button class="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<div style="padding:.75rem clamp(1rem,5vw,3rem);background:var(--white);border-bottom:1px solid var(--gray-100)">
+  <div class="breadcrumb"><a href="/">Trang chủ</a><span>›</span><span>Tài khoản</span></div>
+</div>
+
+<!-- Not logged in state -->
+<div id="not-logged-in" style="display:none;padding:4rem 2rem;text-align:center">
+  <div style="font-size:4rem;margin-bottom:1rem">🔐</div>
+  <h2 style="margin-bottom:.75rem">Vui lòng đăng nhập</h2>
+  <p style="color:var(--gray-600);margin-bottom:1.5rem">Đăng nhập để xem thông tin tài khoản và lịch sử đơn hàng</p>
+  <button onclick="openLoginModal()" class="btn btn-primary btn-lg">Đăng nhập ngay</button>
+</div>
+
+<div class="account-layout" id="account-layout" style="display:none">
+  <!-- Sidebar -->
+  <aside class="account-sidebar">
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <div class="user-avatar" id="user-avatar-el">U</div>
+      <div style="font-weight:700;font-size:1rem" id="user-name-el">...</div>
+      <div style="font-size:.8rem;color:var(--gray-600)" id="user-email-el">...</div>
+    </div>
+    <button class="acc-menu-item active" onclick="switchSection('orders',this)">📦 Đơn hàng của tôi</button>
+    <button class="acc-menu-item" onclick="switchSection('profile',this)">👤 Thông tin cá nhân</button>
+    <button class="acc-menu-item" onclick="switchSection('password',this)">🔒 Đổi mật khẩu</button>
+    <hr style="margin:.75rem 0;border:none;border-top:1px solid var(--gray-100)">
+    <button class="acc-menu-item" style="color:var(--red)" onclick="Auth.logout()">↩ Đăng xuất</button>
+  </aside>
+
+  <!-- Content -->
+  <div class="account-content">
+    <!-- Orders -->
+    <div class="content-section active" id="sec-orders">
+      <div class="section-title">📦 Lịch sử đơn hàng</div>
+      <!-- Filter tabs -->
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">
+        <button class="chip active" onclick="filterOrders('all',this)">Tất cả</button>
+        <button class="chip" onclick="filterOrders('pending',this)">Chờ xác nhận</button>
+        <button class="chip" onclick="filterOrders('confirmed',this)">Đã xác nhận</button>
+        <button class="chip" onclick="filterOrders('shipping',this)">Đang giao</button>
+        <button class="chip" onclick="filterOrders('completed',this)">Hoàn thành</button>
+        <button class="chip" onclick="filterOrders('cancelled',this)">Đã hủy</button>
+      </div>
+      <div id="orders-list"><div class="loading-state"><div class="spinner"></div></div></div>
+    </div>
+
+    <!-- Profile -->
+    <div class="content-section" id="sec-profile">
+      <div class="section-title">👤 Thông tin cá nhân</div>
+      <div class="checkout-card" style="background:var(--white);border-radius:var(--radius-lg);padding:1.5rem;box-shadow:var(--shadow-sm)">
+        <div class="profile-grid">
+          <div class="form-group">
+            <label class="form-label">Họ và tên</label>
+            <input type="text" class="form-control" id="profile-name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" id="profile-email" disabled>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="toast('Tính năng đang phát triển','info')">Lưu thay đổi</button>
+      </div>
+    </div>
+
+    <!-- Password -->
+    <div class="content-section" id="sec-password">
+      <div class="section-title">🔒 Đổi mật khẩu</div>
+      <div style="background:var(--white);border-radius:var(--radius-lg);padding:1.5rem;box-shadow:var(--shadow-sm);max-width:440px">
+        <div class="form-group">
+          <label class="form-label">Mật khẩu hiện tại</label>
+          <input type="password" class="form-control" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mật khẩu mới</label>
+          <input type="password" class="form-control" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Xác nhận mật khẩu mới</label>
+          <input type="password" class="form-control" placeholder="••••••••">
+        </div>
+        <button class="btn btn-primary" onclick="toast('Tính năng đang phát triển','info')">Cập nhật mật khẩu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Auth Modal (for not-logged-in state) -->
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal__header">
+      <span class="modal__title">Đăng nhập</span>
+      <button class="modal__close" onclick="closeAuthModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-control" id="login-email" placeholder="email@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mật khẩu</label>
+        <input type="password" class="form-control" id="login-password" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="doLogin()">Đăng nhập</button>
+      <p style="text-align:center;margin-top:1rem;font-size:.84rem;color:var(--gray-600)">
+        Chưa có tài khoản? <a href="#" onclick="toast('Vui lòng vào trang đăng ký','info')" style="color:var(--red)">Đăng ký ngay</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container"></div>
+<script src="/static/js/app.js"></script>
+<script>
+let allOrders = [];
+let currentUser = null;
+
+function switchSection(name, btn) {
+  document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.acc-menu-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function filterOrders(status, btn) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  const filtered = status === 'all' ? allOrders : allOrders.filter(o => o.status === status);
+  renderOrders(filtered);
+}
+
+function renderOrders(orders) {
+  const list = document.getElementById('orders-list');
+  if (orders.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-state__icon">📦</div><div class="empty-state__title">Chưa có đơn hàng</div></div>`;
+    return;
+  }
+  list.innerHTML = orders.map(o => `
+    <div class="order-card">
+      <div class="order-card__header">
+        <div>
+          <span style="font-weight:700;font-size:.95rem">Đơn #${o.id}</span>
+          <span style="margin-left:.75rem;font-size:.8rem;color:var(--gray-600)">${fmtDate(o.created_at)}</span>
+        </div>
+        <span class="badge badge-${o.status}">${STATUS_LABELS[o.status] || o.status}</span>
+      </div>
+      <div class="order-card__items">
+        ${o.items.map(i => `
+          <div style="flex-shrink:0;text-align:center;width:60px">
+            <div class="order-item-thumb">${i.product_image ? `<img src="${i.product_image}" alt="">` : '🀄'}</div>
+            <div style="font-size:.7rem;margin-top:.25rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${i.product_name}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+        <div style="font-size:.85rem;color:var(--gray-600)">
+          ${o.items.length} sản phẩm · ${o.payment_method === 'cod' ? '💵 COD' : o.payment_method === 'qr' ? '📱 QR' : '💳 Online'}
+        </div>
+        <div style="font-weight:700;color:var(--red)">${fmtPrice(o.total)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openLoginModal() { document.getElementById('auth-modal').classList.add('open'); }
+function closeAuthModal() { document.getElementById('auth-modal').classList.remove('open'); }
+async function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  try {
+    await api('POST', '/api/auth/login', { email, password });
+    toast('Đăng nhập thành công!', 'success');
+    closeAuthModal(); location.reload();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function init() {
+  initNavAuth();
+  currentUser = await Auth.getUser();
+  if (!currentUser) {
+    document.getElementById('not-logged-in').style.display = '';
+    document.getElementById('account-layout').style.display = 'none';
+    return;
+  }
+  document.getElementById('not-logged-in').style.display = 'none';
+  document.getElementById('account-layout').style.display = 'grid';
+  // Fill avatar/name/email
+  document.getElementById('user-avatar-el').textContent = currentUser.name.charAt(0).toUpperCase();
+  document.getElementById('user-name-el').textContent = currentUser.name;
+  document.getElementById('user-email-el').textContent = currentUser.email;
+  document.getElementById('profile-name').value = currentUser.name;
+  document.getElementById('profile-email').value = currentUser.email;
+
+  // Load orders
+  try {
+    allOrders = await api('GET', '/api/orders/my');
+    renderOrders(allOrders);
+  } catch(e) { document.getElementById('orders-list').innerHTML = '<p class="text-muted">Không thể tải đơn hàng</p>'; }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
