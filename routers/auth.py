@@ -67,3 +67,62 @@ def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == req.email).first()
     # In production: send real email. Here we simulate.
     return JSONResponse({"message": "Nếu email tồn tại, chúng tôi đã gửi link đặt lại mật khẩu"})
+import httpx
+import os
+
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:8000")
+
+@router.get("/google")
+def google_login():
+    redirect_uri = f"{FRONTEND_URL}/api/auth/google/callback"
+    url = (
+        "https://accounts.google.com/o/oauth2/v2/auth"
+        f"?client_id={GOOGLE_CLIENT_ID}"
+        f"&redirect_uri={redirect_uri}"
+        "&response_type=code"
+        "&scope=openid email profile"
+    )
+    return RedirectResponse(url)
+
+@router.get("/google/callback")
+async def google_callback(code: str, db: Session = Depends(get_db)):
+    redirect_uri = f"{FRONTEND_URL}/api/auth/google/callback"
+
+    # Đổi code lấy token
+    async with httpx.AsyncClient() as client:
+        token_res = await client.post("https://oauth2.googleapis.com/token", data={
+            "code": code,
+            "client_id": GOOGLE_CLIENT_ID,
+            "client_secret": GOOGLE_CLIENT_SECRET,
+            "redirect_uri": redirect_uri,
+            "grant_type": "authorization_code",
+        })
+        token_data = token_res.json()
+
+        # Lấy thông tin user
+        user_res = await client.get(
+            "https://www.googleapis.com/oauth2/v3/userinfo",
+            headers={"Authorization": f"Bearer {token_data['access_token']}"}
+        )
+        google_user = user_res.json()
+
+    # Tìm hoặc tạo user
+    user = db.query(User).filter(User.email == google_user["email"]).first()
+    if not user:
+        user = User(
+            name=google_user.get("name", ""),
+            email=google_user["email"],
+            avatar=google_user.get("picture"),
+            oauth_provider="google",
+            oauth_id=google_user["sub"],
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    token = create_access_token({"sub": str(user.id)})
+    response = RedirectResponse(url="/")
+    response.set_cookie("access_token", token, httponly=True, max_age=60*60*24*7, samesite="lax")
+    return response
