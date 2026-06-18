@@ -3,4 +3,4 @@ __pycache__/
 #*.db
 *.pyc
 static/images/products/*.png
-static/images/products/*.jpg
+#static/images/products/*.jpg
