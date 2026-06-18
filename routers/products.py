@@ -15,7 +15,7 @@ def save_upload(file: UploadFile, subfolder="") -> str:
     folder = os.path.join(UPLOAD_DIR, subfolder)
     os.makedirs(folder, exist_ok=True)
     ext = os.path.splitext(file.filename)[1]
-    filename = f"{uuid.uuid4().hex}{ext}"
+    filename = file.filename.replace(" ", "_")
     path = os.path.join(folder, filename)
     with open(path, "wb") as f:
         shutil.copyfileobj(file.file, f)
