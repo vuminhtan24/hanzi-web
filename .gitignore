@@ -1,6 +1,6 @@
 .env
 __pycache__/
-*.db
+#*.db
 *.pyc
 static/images/products/*.png
-static/images/products/*.jpg
+#static/images/products/*.jpg
